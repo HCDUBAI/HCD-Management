@@ -1,280 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0A1B3D" />
-  <link rel="manifest" href="manifest.json" />
-  <title>HC Dubai Team App</title>
-  <style>
-    :root{
-      --navy:#0A1B3D;
-      --navy2:#102B55;
-      --cyan:#00B7E3;
-      --cyan2:#12C7EA;
-      --white:#FFFFFF;
-      --light:#F4F6F8;
-      --muted:#7D8AA0;
-      --green:#36B66A;
-      --red:#EB5C5C;
-      --orange:#F0A23A;
-      --border:#DDE4EC;
-    }
-    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-    body{margin:0;background:var(--light);color:var(--navy)}
-    header{
-      background:var(--white);
-      padding:14px 16px 10px;
-      position:sticky;top:0;z-index:20;
-      border-bottom:1px solid var(--border);
-    }
-    .brand{display:flex;align-items:center;gap:12px;max-width:720px;margin:auto}
-    .brand img{width:62px;height:62px;object-fit:contain;border-radius:12px;background:white}
-    .brand-title{font-size:22px;font-weight:800;line-height:1;color:var(--navy)}
-    .brand-title span{color:var(--cyan)}
-    .subtitle{font-size:11px;letter-spacing:1.2px;margin-top:5px;color:var(--navy)}
-    main{padding:16px 16px 92px;max-width:720px;margin:auto}
-    .hero{
-      background:linear-gradient(135deg,var(--navy),var(--navy2));
-      color:white;border-radius:18px;padding:18px;margin-bottom:14px;
-      box-shadow:0 8px 22px rgba(10,27,61,.15)
-    }
-    .card{
-      background:white;border:1px solid var(--border);border-radius:16px;
-      padding:16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(10,27,61,.06)
-    }
-    .row{display:flex;gap:10px;flex-wrap:wrap}.stat{flex:1;min-width:140px}
-    .label{font-size:12px;color:var(--cyan);text-transform:uppercase;font-weight:800;letter-spacing:.4px}
-    .big{font-size:28px;font-weight:800;margin:6px 0;color:var(--navy)}
-    .hero .big{color:white}
-    button,.btn{
-      border:0;border-radius:10px;padding:12px 14px;
-      background:var(--cyan);color:white;font-weight:800;cursor:pointer
-    }
-    button.secondary{background:var(--navy);color:white}
-    button.light{background:white;color:var(--navy);border:1px solid var(--border)}
-    button.danger{background:var(--red);color:white}
-    input,select{
-      width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);
-      background:white;color:var(--navy);margin:6px 0 12px
-    }
-    table{width:100%;border-collapse:collapse;font-size:14px}
-    th,td{padding:10px 6px;border-bottom:1px solid var(--border);text-align:left}
-    th{color:var(--muted);font-size:12px}
-    nav{
-      position:fixed;bottom:0;left:0;right:0;background:var(--navy);
-      display:flex;justify-content:center;z-index:30
-    }
-    nav button{
-      background:transparent;color:#C9D3E2;border-radius:0;flex:1;max-width:145px;
-      padding:14px 4px;font-size:12px
-    }
-    nav button.active{color:var(--cyan);border-top:3px solid var(--cyan)}
-    .hidden{display:none}
-    .pill{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;background:#EDF7FB;color:var(--navy)}
-    .actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{padding:8px 10px}
-    .muted{color:var(--muted);font-size:13px}
-    .quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-    .quick{background:white;border:1px solid var(--border);padding:14px;border-radius:14px;text-align:center;font-weight:800}
-    .banner{
-      background:linear-gradient(135deg,var(--navy),#123D70);
-      color:white;border-radius:16px;padding:16px;text-align:center;font-weight:800;letter-spacing:.5px
-    }
-    .banner span{color:var(--cyan)}
-    @media(min-width:620px){.quick-grid{grid-template-columns:repeat(4,1fr)}}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<meta name="theme-color" content="#0A1B3D" />
+<link rel="manifest" href="manifest.json" />
+<title>HC Dubai Management</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--navy:#0A1B3D;--navy2:#12345c;--cyan:#00B7E3;--white:#fff;--light:#F4F6F8;--muted:#75839a;--border:#dce4ed;--green:#29b765;--red:#e45555;--orange:#ee9b2d}*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}body{margin:0;background:var(--light);color:var(--navy)}header{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);padding:12px 16px;z-index:10}.brand{max-width:780px;margin:auto;display:flex;align-items:center;gap:12px}.brand img{width:58px;height:58px;object-fit:contain;border-radius:12px}.brand-title{font-size:22px;font-weight:900}.brand-title span{color:var(--cyan)}.brand-sub{font-size:11px;letter-spacing:1.2px}main{max-width:780px;margin:auto;padding:16px 16px 90px}.hidden{display:none!important}.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px}.hero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border-radius:18px;padding:18px;margin-bottom:14px}.label{font-size:12px;color:var(--cyan);text-transform:uppercase;font-weight:900}.big{font-size:27px;font-weight:900;margin:6px 0}.muted{color:var(--muted);font-size:13px}.hero .muted{color:#d4e0ed}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}button{border:0;border-radius:10px;padding:12px 14px;background:var(--cyan);color:#fff;font-weight:800}button.light{background:#eef4f9;color:var(--navy)}button:disabled{opacity:.45}input,select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--navy);margin:6px 0 12px}textarea{min-height:80px}.notice{padding:12px;border-radius:12px;background:#eef8fb;margin-bottom:14px}.error{background:#fff1f1;color:#9c2727}.success{background:#eefaf3;color:#176d3c}.status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;background:#edf7fb}.training{padding:14px 0;border-bottom:1px solid var(--border)}.training:last-child{border-bottom:0}table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:10px 6px;text-align:left;border-bottom:1px solid var(--border)}th{font-size:12px;color:var(--muted)}.role-banner{display:flex;justify-content:space-between;align-items:center}.auth-wrap{max-width:460px;margin:28px auto}@media(max-width:560px){.grid3{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-<header>
-  <div class="brand">
-    <img src="hc_dubai_logo.jpg" alt="HC Dubai Logo">
-    <div>
-      <div class="brand-title">HC <span>DUBAI</span></div>
-      <div class="subtitle">HANDBALL CLUB DUBAI</div>
-    </div>
-  </div>
-</header>
-
+<header><div class="brand"><img src="hc_dubai_logo.jpg"><div><div class="brand-title">HC <span>DUBAI</span></div><div class="brand-sub">HANDBALL CLUB DUBAI</div></div></div></header>
 <main>
-  <section id="home">
-    <div class="hero">
-      <div class="label">Next Training</div>
-      <div class="big" id="nextTrainingTitle">No training scheduled</div>
-      <div class="muted" style="color:#D9E5F0" id="nextTrainingMeta">Add your first training session.</div>
-    </div>
-
-    <div class="row">
-      <div class="card stat"><div class="label">Active Players</div><div class="big" id="homePlayers">0</div></div>
-      <div class="card stat"><div class="label">Fees Collected</div><div class="big" id="homeCollected">AED 0</div></div>
-    </div>
-    <div class="row">
-      <div class="card stat"><div class="label">Outstanding</div><div class="big" id="homeOutstanding">AED 0</div></div>
-      <div class="card stat"><div class="label">Avg Attendance</div><div class="big" id="homeAttendance">0%</div></div>
-    </div>
-
-    <div class="label" style="margin:8px 0">Quick Actions</div>
-    <div class="quick-grid">
-      <button class="quick" onclick="goTo('training')">Add Training</button>
-      <button class="quick" onclick="goTo('attendance')">Take Attendance</button>
-      <button class="quick" onclick="goTo('fees')">Register Payment</button>
-      <button class="quick" onclick="goTo('players')">Add Player</button>
-    </div>
-
-    <div class="banner" style="margin-top:14px">ONE CLUB <span>•</span> ONE FAMILY <span>•</span> ONE PASSION</div>
+<div id="authView" class="auth-wrap">
+  <div class="card"><div class="label">HC Dubai Management</div><h2>Sign in</h2><div id="authMsg"></div><input id="email" type="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><button onclick="signIn()">Sign in</button><button class="light" onclick="toggleSignup()" style="margin-left:6px">Create player account</button></div>
+  <div id="signupBox" class="card hidden"><div class="label">New Player</div><input id="signupName" placeholder="Full name"><input id="signupEmail" type="email" placeholder="Email"><input id="signupPassword" type="password" placeholder="Password (min 6 chars)"><button onclick="signUp()">Create account</button><div class="muted" style="margin-top:10px">New accounts start as PLAYER.</div></div>
+</div>
+<div id="appView" class="hidden">
+  <div class="card role-banner"><div><div class="label">Signed in as</div><div id="whoAmI" style="font-weight:900">—</div></div><button class="light" onclick="signOut()">Sign out</button></div><div id="globalMsg"></div>
+  <section id="playerSection" class="hidden">
+    <div class="hero"><div class="label">Next Training</div><div class="big" id="playerNextTraining">No training scheduled</div><div class="muted" id="playerNextMeta"></div><div style="margin-top:12px"><button id="registerBtn" onclick="registerNextTraining()">Register / I'm attending</button></div></div>
+    <div class="grid"><div class="card"><div class="label">Billing</div><div class="big" id="billingMode">—</div></div><div class="card"><div class="label">Credits remaining</div><div class="big" id="creditsRemaining">—</div></div></div>
+    <div id="playerBlockNotice"></div><div class="card"><div class="label">My Training History</div><div id="myRegistrations"></div></div>
   </section>
-
-  <section id="players" class="hidden">
-    <div class="card">
-      <div class="label">Add Player</div>
-      <input id="playerName" placeholder="Full name"/>
-      <input id="playerNumber" placeholder="Jersey number" type="number"/>
-      <select id="playerRole">
-        <option>Goalkeeper</option><option>Left Wing</option><option>Right Wing</option>
-        <option>Left Back</option><option>Right Back</option><option>Centre Back</option><option>Pivot</option>
-      </select>
-      <button onclick="addPlayer()">Add Player</button>
-    </div>
-    <div class="card"><div class="label">Roster</div><div id="playersList"></div></div>
+  <section id="adminSection" class="hidden">
+    <div class="grid"><div class="card"><div class="label">Players</div><div class="big" id="adminPlayerCount">0</div></div><div class="card"><div class="label">Upcoming trainings</div><div class="big" id="adminTrainingCount">0</div></div></div>
+    <div class="card"><div class="label">Create Training</div><input id="trTitle" value="Training"><input id="trDate" type="date"><input id="trTime" type="time"><input id="trLocation" placeholder="Location"><textarea id="trNotes" placeholder="Notes"></textarea><button onclick="createTraining()">Create training</button></div>
+    <div class="card"><div class="label">Upcoming Trainings</div><div id="adminTrainings"></div></div>
+    <div class="card"><div class="label">Player Accounts</div><div id="adminProfiles"></div></div>
   </section>
-
-  <section id="training" class="hidden">
-    <div class="card">
-      <div class="label">Add Training</div>
-      <input id="trainingDate" type="date"/>
-      <input id="trainingTime" type="time"/>
-      <input id="trainingLocation" placeholder="Location"/>
-      <button onclick="addTraining()">Add Training</button>
-    </div>
-    <div class="card"><div class="label">Training Sessions</div><div id="trainingList"></div></div>
+  <section id="accountantSection" class="hidden">
+    <div class="grid3"><div class="card"><div class="label">Income</div><div class="big" id="income">AED 0</div></div><div class="card"><div class="label">Expenses</div><div class="big" id="expensesTotal">AED 0</div></div><div class="card"><div class="label">Balance</div><div class="big" id="balance">AED 0</div></div></div>
+    <div class="card"><div class="label">Register Package Payment</div><select id="pkgPlayer"></select><select id="pkgCode"><option value="PACKAGE4">4 Training Package</option><option value="PACKAGE8">8 Training Package</option></select><input id="pkgAmount" type="number" min="0" placeholder="Amount paid (AED)"><input id="pkgMethod" placeholder="Payment method"><textarea id="pkgNotes" placeholder="Notes"></textarea><button onclick="recordPackagePayment()">Register package payment</button></div>
+    <div class="card"><div class="label">Outstanding Single Fees</div><div id="singleDues"></div></div>
+    <div class="card"><div class="label">Add Expense</div><input id="expDate" type="date"><input id="expCategory" placeholder="Category"><input id="expAmount" type="number" min="0" placeholder="Amount (AED)"><input id="expMethod" placeholder="Payment method"><input id="expRef" placeholder="Reference / receipt"><textarea id="expDesc" placeholder="Description"></textarea><button onclick="addExpense()">Add expense</button></div>
+    <div class="card"><div class="label">Recent Transactions</div><div id="transactions"></div></div>
   </section>
-
-  <section id="attendance" class="hidden">
-    <div class="card">
-      <div class="label">Take Attendance</div>
-      <select id="attendanceTraining" onchange="renderAttendance()"></select>
-      <div id="attendanceList"></div>
-    </div>
-  </section>
-
-  <section id="fees" class="hidden">
-    <div class="card">
-      <div class="label">Season Fee</div>
-      <input id="seasonFee" type="number" min="0" placeholder="e.g. 1000"/>
-      <button onclick="saveSeasonFee()">Save Fee</button>
-      <div class="muted">One fee amount for all active players in this V1.</div>
-    </div>
-    <div class="card"><div class="label">Payments</div><div id="feesList"></div></div>
-  </section>
+</div>
 </main>
-
-<nav>
-  <button class="active" data-target="home" onclick="showSection('home',this)">Home</button>
-  <button data-target="players" onclick="showSection('players',this)">Players</button>
-  <button data-target="training" onclick="showSection('training',this)">Training</button>
-  <button data-target="attendance" onclick="showSection('attendance',this)">Attendance</button>
-  <button data-target="fees" onclick="showSection('fees',this)">Fees</button>
-</nav>
-
 <script>
-const store = {
-  players: JSON.parse(localStorage.getItem('hc_players')||'[]'),
-  trainings: JSON.parse(localStorage.getItem('hc_trainings')||'[]'),
-  attendance: JSON.parse(localStorage.getItem('hc_attendance')||'{}'),
-  payments: JSON.parse(localStorage.getItem('hc_payments')||'{}'),
-  seasonFee: Number(localStorage.getItem('hc_seasonFee')||0)
-};
-function persist(){
-  localStorage.setItem('hc_players',JSON.stringify(store.players));
-  localStorage.setItem('hc_trainings',JSON.stringify(store.trainings));
-  localStorage.setItem('hc_attendance',JSON.stringify(store.attendance));
-  localStorage.setItem('hc_payments',JSON.stringify(store.payments));
-  localStorage.setItem('hc_seasonFee',String(store.seasonFee));
-}
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function showSection(id,btn){
-  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderAll();
-}
-function goTo(id){
-  const btn=document.querySelector(`nav button[data-target="${id}"]`);
-  showSection(id,btn);
-}
-function addPlayer(){
-  const name=document.getElementById('playerName').value.trim();
-  if(!name) return alert('Enter player name');
-  store.players.push({id:Date.now(),name,number:document.getElementById('playerNumber').value,role:document.getElementById('playerRole').value,active:true});
-  document.getElementById('playerName').value=''; document.getElementById('playerNumber').value='';
-  persist(); renderAll();
-}
-function removePlayer(id){store.players=store.players.filter(p=>p.id!==id);persist();renderAll()}
-function addTraining(){
-  const date=document.getElementById('trainingDate').value;
-  if(!date) return alert('Select date');
-  store.trainings.push({id:Date.now(),date,time:document.getElementById('trainingTime').value,location:document.getElementById('trainingLocation').value});
-  store.trainings.sort((a,b)=>a.date.localeCompare(b.date));
-  persist();renderAll();
-}
-function removeTraining(id){store.trainings=store.trainings.filter(t=>t.id!==id);delete store.attendance[id];persist();renderAll()}
-function setAttendance(tid,pid,status){
-  store.attendance[tid]=store.attendance[tid]||{}; store.attendance[tid][pid]=status; persist();renderAttendance();renderHome();
-}
-function saveSeasonFee(){
-  store.seasonFee=Number(document.getElementById('seasonFee').value||0);persist();renderFees();renderHome();
-}
-function addPayment(pid){
-  const amt=prompt('Payment amount (AED):');
-  if(amt===null) return; const n=Number(amt); if(!n||n<0) return alert('Invalid amount');
-  store.payments[pid]=(store.payments[pid]||0)+n;persist();renderAll();
-}
-function renderPlayers(){
-  document.getElementById('playersList').innerHTML = store.players.length?`<table><tr><th>#</th><th>Name</th><th>Role</th><th></th></tr>${store.players.map(p=>`<tr><td>${esc(p.number||'-')}</td><td><strong>${esc(p.name)}</strong></td><td>${esc(p.role)}</td><td><button class="danger" onclick="removePlayer(${p.id})">Remove</button></td></tr>`).join('')}</table>`:'<p class="muted">No players yet.</p>';
-}
-function renderTraining(){
-  document.getElementById('trainingList').innerHTML=store.trainings.length?`<table><tr><th>Date</th><th>Time</th><th>Location</th><th></th></tr>${store.trainings.map(t=>`<tr><td>${t.date}</td><td>${esc(t.time||'-')}</td><td>${esc(t.location||'-')}</td><td><button class="danger" onclick="removeTraining(${t.id})">Remove</button></td></tr>`).join('')}</table>`:'<p class="muted">No training sessions yet.</p>';
-  const sel=document.getElementById('attendanceTraining');
-  const old=sel.value;
-  sel.innerHTML=store.trainings.map(t=>`<option value="${t.id}">${t.date} ${esc(t.time||'')} · ${esc(t.location||'')}</option>`).join('');
-  if(old) sel.value=old;
-}
-function renderAttendance(){
-  const tid=document.getElementById('attendanceTraining').value;
-  const box=document.getElementById('attendanceList');
-  if(!tid){box.innerHTML='<p class="muted">Add a training session first.</p>';return}
-  const a=store.attendance[tid]||{};
-  box.innerHTML=store.players.length?store.players.map(p=>{
-    const st=a[p.id]||'Not set';
-    return `<div class="card" style="margin-top:10px"><strong>${esc(p.name)}</strong> <span class="pill">${esc(st)}</span><div class="actions" style="margin-top:10px">
-    <button onclick="setAttendance(${tid},${p.id},'Present')">Present</button>
-    <button class="secondary" onclick="setAttendance(${tid},${p.id},'Absent')">Absent</button>
-    <button class="light" onclick="setAttendance(${tid},${p.id},'Excused')">Excused</button>
-    <button class="light" onclick="setAttendance(${tid},${p.id},'Late')">Late</button></div></div>`}).join(''):'<p class="muted">Add players first.</p>';
-}
-function renderFees(){
-  document.getElementById('seasonFee').value=store.seasonFee||'';
-  document.getElementById('feesList').innerHTML=store.players.length?`<table><tr><th>Player</th><th>Paid</th><th>Due</th><th></th></tr>${store.players.map(p=>{
-    const paid=Number(store.payments[p.id]||0), due=Math.max(0,store.seasonFee-paid);
-    return `<tr><td><strong>${esc(p.name)}</strong></td><td>AED ${paid.toFixed(0)}</td><td>AED ${due.toFixed(0)}</td><td><button onclick="addPayment(${p.id})">Pay</button></td></tr>`}).join('')}</table>`:'<p class="muted">Add players first.</p>';
-}
-function renderHome(){
-  document.getElementById('homePlayers').textContent=store.players.length;
-  let collected=Object.values(store.payments).reduce((a,b)=>a+Number(b||0),0);
-  let expected=store.seasonFee*store.players.length;
-  document.getElementById('homeCollected').textContent='AED '+collected.toFixed(0);
-  document.getElementById('homeOutstanding').textContent='AED '+Math.max(0,expected-collected).toFixed(0);
-  let total=0,present=0;
-  Object.values(store.attendance).forEach(m=>Object.values(m).forEach(s=>{total++;if(s==='Present'||s==='Late')present++;}));
-  document.getElementById('homeAttendance').textContent=(total?Math.round(present/total*100):0)+'%';
-  const today=new Date().toISOString().slice(0,10);
-  const next=store.trainings.find(t=>t.date>=today)||store.trainings[0];
-  document.getElementById('nextTrainingTitle').textContent=next?next.date:'No training scheduled';
-  document.getElementById('nextTrainingMeta').textContent=next?`${next.time||''} ${next.location?'· '+next.location:''}`:'Add your first training session.';
-}
-function renderAll(){renderPlayers();renderTraining();renderAttendance();renderFees();renderHome()}
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
-renderAll();
+const SUPABASE_URL='https://tmumgexadofyktsqwlnu.supabase.co';
+const SUPABASE_KEY='sb_publishable_GJUesAyLLq_qzokIFY-1Bg_f09qpNWq';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);let currentUser=null,currentProfile=null,nextTraining=null;
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function money(n){return'AED '+Number(n||0).toLocaleString()}function msg(id,t,k='success'){document.getElementById(id).innerHTML=`<div class="notice ${k}">${esc(t)}</div>`}function clearMsg(id){document.getElementById(id).innerHTML=''}function toggleSignup(){document.getElementById('signupBox').classList.toggle('hidden')}
+async function signUp(){clearMsg('authMsg');const full_name=signupName.value.trim(),email=signupEmail.value.trim(),password=signupPassword.value;if(!full_name||!email||password.length<6)return msg('authMsg','Enter name, email and a password of at least 6 characters.','error');const{data,error}=await sb.auth.signUp({email,password,options:{data:{full_name}}});if(error)return msg('authMsg',error.message,'error');if(data.session)await loadSession();else msg('authMsg','Account created. Check your email if confirmation is enabled.')}
+async function signIn(){clearMsg('authMsg');const{error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(error)return msg('authMsg',error.message,'error');await loadSession()}async function signOut(){await sb.auth.signOut();location.reload()}
+async function loadSession(){const{data:{session}}=await sb.auth.getSession();if(!session){authView.classList.remove('hidden');appView.classList.add('hidden');return}currentUser=session.user;const{data:profile,error}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();if(error)return msg('authMsg','Could not load profile: '+error.message,'error');currentProfile=profile;authView.classList.add('hidden');appView.classList.remove('hidden');whoAmI.textContent=`${profile.full_name||currentUser.email} · ${profile.role.toUpperCase()}`;await refreshRoleView()}
+async function refreshRoleView(){['playerSection','adminSection','accountantSection'].forEach(id=>document.getElementById(id).classList.add('hidden'));if(currentProfile.role==='player'){playerSection.classList.remove('hidden');await loadPlayer()}else if(currentProfile.role==='admin'){adminSection.classList.remove('hidden');await loadAdmin()}else{accountantSection.classList.remove('hidden');await loadAccountant()}}
+async function loadPlayer(){const now=new Date().toISOString();const{data:trs,error}=await sb.from('trainings').select('*').eq('cancelled',false).eq('registration_open',true).gte('starts_at',now).order('starts_at').limit(1);if(error)return msg('globalMsg',error.message,'error');nextTraining=trs?.[0]||null;if(nextTraining){playerNextTraining.textContent=nextTraining.title||'Training';playerNextMeta.textContent=new Date(nextTraining.starts_at).toLocaleString()+(nextTraining.location?' · '+nextTraining.location:'')}else{playerNextTraining.textContent='No training scheduled';playerNextMeta.textContent=''}billingMode.textContent=currentProfile.billing_mode==='single'?'Single Fee':currentProfile.billing_mode==='package4'?'Package 4':'Package 8';let credits=0;if(currentProfile.billing_mode!=='single'){const{data:p}=await sb.from('package_purchases').select('credits_remaining,status').eq('player_id',currentUser.id).eq('status','active');credits=(p||[]).reduce((a,x)=>a+Number(x.credits_remaining||0),0);creditsRemaining.textContent=credits}else creditsRemaining.textContent='Pay per training';const{data:regs}=await sb.from('training_registrations').select('id,registered_at,payment_status,attendance,trainings(title,starts_at,location)').eq('player_id',currentUser.id).order('registered_at',{ascending:false}).limit(15);const due=(regs||[]).some(r=>r.payment_status==='due'&&r.attendance==='present');playerBlockNotice.innerHTML='';if(currentProfile.billing_mode==='single'&&due)playerBlockNotice.innerHTML='<div class="notice error"><strong>Payment required:</strong> previous training is still unpaid.</div>';else if(currentProfile.billing_mode!=='single'&&credits<=0)playerBlockNotice.innerHTML='<div class="notice error"><strong>Package completed:</strong> buy a new package before registering.</div>';registerBtn.disabled=!nextTraining;myRegistrations.innerHTML=(regs||[]).length?(regs||[]).map(r=>`<div class="training"><strong>${esc(r.trainings?.title||'Training')}</strong><br><span class="muted">${r.trainings?.starts_at?new Date(r.trainings.starts_at).toLocaleString():''}</span><br><span class="status">${esc(r.payment_status)}</span> <span class="status">${esc(r.attendance)}</span></div>`).join(''):'<p class="muted">No registrations yet.</p>'}
+async function registerNextTraining(){if(!nextTraining)return;const{data,error}=await sb.rpc('register_for_training',{p_training_id:nextTraining.id});if(error)return msg('globalMsg',error.message,'error');msg('globalMsg',data||'Registration confirmed.');await loadPlayer()}
+async function loadAdmin(){const{data:profiles,error:pErr}=await sb.from('profiles').select('*').order('full_name');if(pErr)return msg('globalMsg',pErr.message,'error');const{data:trs,error:tErr}=await sb.from('trainings').select('*').order('starts_at',{ascending:false}).limit(30);if(tErr)return msg('globalMsg',tErr.message,'error');adminPlayerCount.textContent=(profiles||[]).filter(p=>p.role==='player'&&p.active).length;adminTrainingCount.textContent=(trs||[]).filter(t=>new Date(t.starts_at)>=new Date()&&!t.cancelled).length;adminTrainings.innerHTML=(trs||[]).map(t=>`<div class="training"><strong>${esc(t.title)}</strong><br><span class="muted">${new Date(t.starts_at).toLocaleString()} ${t.location?'· '+esc(t.location):''}</span></div>`).join('')||'<p class="muted">No trainings yet.</p>';adminProfiles.innerHTML=`<table><tr><th>Name</th><th>Role</th><th>Billing</th><th></th></tr>${(profiles||[]).map(p=>`<tr><td>${esc(p.full_name||'—')}</td><td><select id="role_${p.id}"><option value="player" ${p.role==='player'?'selected':''}>Player</option><option value="admin" ${p.role==='admin'?'selected':''}>Admin</option><option value="accountant" ${p.role==='accountant'?'selected':''}>Accountant</option></select></td><td><select id="bill_${p.id}"><option value="single" ${p.billing_mode==='single'?'selected':''}>Single</option><option value="package4" ${p.billing_mode==='package4'?'selected':''}>Package 4</option><option value="package8" ${p.billing_mode==='package8'?'selected':''}>Package 8</option></select></td><td><button onclick="saveProfile('${p.id}')">Save</button></td></tr>`).join('')}</table>`}
+async function createTraining(){if(!trDate.value||!trTime.value)return msg('globalMsg','Select date and time.','error');const starts_at=new Date(`${trDate.value}T${trTime.value}`).toISOString();const{error}=await sb.from('trainings').insert({title:trTitle.value.trim()||'Training',starts_at,location:trLocation.value.trim(),notes:trNotes.value.trim(),created_by:currentUser.id});if(error)return msg('globalMsg',error.message,'error');msg('globalMsg','Training created.');await loadAdmin()}
+async function saveProfile(id){const role=document.getElementById('role_'+id).value,billing_mode=document.getElementById('bill_'+id).value;const{error}=await sb.from('profiles').update({role,billing_mode}).eq('id',id);if(error)return msg('globalMsg',error.message,'error');msg('globalMsg','Profile updated.');await loadAdmin()}
+async function loadAccountant(){const{data:cash,error:cErr}=await sb.rpc('get_cashflow_summary');if(cErr)return msg('globalMsg',cErr.message,'error');const row=cash?.[0]||{};income.textContent=money(row.total_income);expensesTotal.textContent=money(row.total_expenses);balance.textContent=money(row.current_balance);const{data:players}=await sb.from('profiles').select('id,full_name').eq('role','player').eq('active',true).order('full_name');pkgPlayer.innerHTML=(players||[]).map(p=>`<option value="${p.id}">${esc(p.full_name||p.id)}</option>`).join('');const{data:dues}=await sb.from('training_registrations').select('id,registered_at,profiles!training_registrations_player_id_fkey(full_name),trainings(title,starts_at)').eq('payment_status','due').order('registered_at');singleDues.innerHTML=(dues||[]).length?(dues||[]).map(r=>`<div class="training"><strong>${esc(r.profiles?.full_name||'Player')}</strong><br><span class="muted">${esc(r.trainings?.title||'Training')} · ${r.trainings?.starts_at?new Date(r.trainings.starts_at).toLocaleString():''}</span><br><button onclick="paySingle('${r.id}')">Mark paid</button></div>`).join(''):'<p class="muted">No outstanding Single Fees.</p>';const{data:pays}=await sb.from('payments').select('amount_aed,payment_type,payment_date').order('payment_date',{ascending:false}).limit(15);const{data:exps}=await sb.from('expenses').select('*').order('expense_date',{ascending:false}).limit(15);const tx=[...(pays||[]).map(p=>({date:p.payment_date,kind:'Income',desc:p.payment_type,amount:Number(p.amount_aed)})),...(exps||[]).map(e=>({date:e.expense_date,kind:'Expense',desc:e.category,amount:-Number(e.amount_aed)}))].sort((a,b)=>new Date(b.date)-new Date(a.date));transactions.innerHTML=tx.length?`<table><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th></tr>${tx.map(t=>`<tr><td>${new Date(t.date).toLocaleDateString()}</td><td>${t.kind}</td><td>${esc(t.desc)}</td><td>${money(t.amount)}</td></tr>`).join('')}</table>`:'<p class="muted">No transactions yet.</p>'}
+async function recordPackagePayment(){const amount=Number(pkgAmount.value||0);if(!pkgPlayer.value||amount<=0)return msg('globalMsg','Select player and amount.','error');const{error}=await sb.rpc('record_package_payment',{p_player_id:pkgPlayer.value,p_package_code:pkgCode.value,p_amount:amount,p_payment_method:pkgMethod.value.trim()||null,p_notes:pkgNotes.value.trim()||null});if(error)return msg('globalMsg',error.message,'error');msg('globalMsg','Package payment registered and credits activated.');await loadAccountant()}
+async function paySingle(id){const raw=prompt('Amount paid (AED):');if(raw===null)return;const amount=Number(raw);if(!amount||amount<=0)return alert('Invalid amount');const{error}=await sb.rpc('record_single_payment',{p_registration_id:id,p_amount:amount,p_payment_method:prompt('Payment method (optional):')||null,p_notes:null});if(error)return msg('globalMsg',error.message,'error');msg('globalMsg','Single payment registered.');await loadAccountant()}
+async function addExpense(){const amount=Number(expAmount.value||0);if(!expCategory.value.trim()||amount<=0)return msg('globalMsg','Enter category and amount.','error');const{error}=await sb.from('expenses').insert({expense_date:expDate.value||new Date().toISOString().slice(0,10),category:expCategory.value.trim(),description:expDesc.value.trim()||null,amount_aed:amount,payment_method:expMethod.value.trim()||null,reference:expRef.value.trim()||null,recorded_by:currentUser.id});if(error)return msg('globalMsg',error.message,'error');msg('globalMsg','Expense recorded.');await loadAccountant()}
+loadSession();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
-</body>
-</html>
+</body></html>
