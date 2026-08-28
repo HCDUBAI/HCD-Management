@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0A1B3D" />
+  <link rel="manifest" href="manifest.json" />
+  <title>HC Dubai Team App</title>
+  <style>
+    :root{
+      --navy:#0A1B3D;
+      --navy2:#102B55;
+      --cyan:#00B7E3;
+      --cyan2:#12C7EA;
+      --white:#FFFFFF;
+      --light:#F4F6F8;
+      --muted:#7D8AA0;
+      --green:#36B66A;
+      --red:#EB5C5C;
+      --orange:#F0A23A;
+      --border:#DDE4EC;
+    }
+    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+    body{margin:0;background:var(--light);color:var(--navy)}
+    header{
+      background:var(--white);
+      padding:14px 16px 10px;
+      position:sticky;top:0;z-index:20;
+      border-bottom:1px solid var(--border);
+    }
+    .brand{display:flex;align-items:center;gap:12px;max-width:720px;margin:auto}
+    .brand img{width:62px;height:62px;object-fit:contain;border-radius:12px;background:white}
+    .brand-title{font-size:22px;font-weight:800;line-height:1;color:var(--navy)}
+    .brand-title span{color:var(--cyan)}
+    .subtitle{font-size:11px;letter-spacing:1.2px;margin-top:5px;color:var(--navy)}
+    main{padding:16px 16px 92px;max-width:720px;margin:auto}
+    .hero{
+      background:linear-gradient(135deg,var(--navy),var(--navy2));
+      color:white;border-radius:18px;padding:18px;margin-bottom:14px;
+      box-shadow:0 8px 22px rgba(10,27,61,.15)
+    }
+    .card{
+      background:white;border:1px solid var(--border);border-radius:16px;
+      padding:16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(10,27,61,.06)
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap}.stat{flex:1;min-width:140px}
+    .label{font-size:12px;color:var(--cyan);text-transform:uppercase;font-weight:800;letter-spacing:.4px}
+    .big{font-size:28px;font-weight:800;margin:6px 0;color:var(--navy)}
+    .hero .big{color:white}
+    button,.btn{
+      border:0;border-radius:10px;padding:12px 14px;
+      background:var(--cyan);color:white;font-weight:800;cursor:pointer
+    }
+    button.secondary{background:var(--navy);color:white}
+    button.light{background:white;color:var(--navy);border:1px solid var(--border)}
+    button.danger{background:var(--red);color:white}
+    input,select{
+      width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);
+      background:white;color:var(--navy);margin:6px 0 12px
+    }
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px 6px;border-bottom:1px solid var(--border);text-align:left}
+    th{color:var(--muted);font-size:12px}
+    nav{
+      position:fixed;bottom:0;left:0;right:0;background:var(--navy);
+      display:flex;justify-content:center;z-index:30
+    }
+    nav button{
+      background:transparent;color:#C9D3E2;border-radius:0;flex:1;max-width:145px;
+      padding:14px 4px;font-size:12px
+    }
+    nav button.active{color:var(--cyan);border-top:3px solid var(--cyan)}
+    .hidden{display:none}
+    .pill{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;background:#EDF7FB;color:var(--navy)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{padding:8px 10px}
+    .muted{color:var(--muted);font-size:13px}
+    .quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .quick{background:white;border:1px solid var(--border);padding:14px;border-radius:14px;text-align:center;font-weight:800}
+    .banner{
+      background:linear-gradient(135deg,var(--navy),#123D70);
+      color:white;border-radius:16px;padding:16px;text-align:center;font-weight:800;letter-spacing:.5px
+    }
+    .banner span{color:var(--cyan)}
+    @media(min-width:620px){.quick-grid{grid-template-columns:repeat(4,1fr)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="hc_dubai_logo.jpg" alt="HC Dubai Logo">
+    <div>
+      <div class="brand-title">HC <span>DUBAI</span></div>
+      <div class="subtitle">HANDBALL CLUB DUBAI</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="home">
+    <div class="hero">
+      <div class="label">Next Training</div>
+      <div class="big" id="nextTrainingTitle">No training scheduled</div>
+      <div class="muted" style="color:#D9E5F0" id="nextTrainingMeta">Add your first training session.</div>
+    </div>
+
+    <div class="row">
+      <div class="card stat"><div class="label">Active Players</div><div class="big" id="homePlayers">0</div></div>
+      <div class="card stat"><div class="label">Fees Collected</div><div class="big" id="homeCollected">AED 0</div></div>
+    </div>
+    <div class="row">
+      <div class="card stat"><div class="label">Outstanding</div><div class="big" id="homeOutstanding">AED 0</div></div>
+      <div class="card stat"><div class="label">Avg Attendance</div><div class="big" id="homeAttendance">0%</div></div>
+    </div>
+
+    <div class="label" style="margin:8px 0">Quick Actions</div>
+    <div class="quick-grid">
+      <button class="quick" onclick="goTo('training')">Add Training</button>
+      <button class="quick" onclick="goTo('attendance')">Take Attendance</button>
+      <button class="quick" onclick="goTo('fees')">Register Payment</button>
+      <button class="quick" onclick="goTo('players')">Add Player</button>
+    </div>
+
+    <div class="banner" style="margin-top:14px">ONE CLUB <span>•</span> ONE FAMILY <span>•</span> ONE PASSION</div>
+  </section>
+
+  <section id="players" class="hidden">
+    <div class="card">
+      <div class="label">Add Player</div>
+      <input id="playerName" placeholder="Full name"/>
+      <input id="playerNumber" placeholder="Jersey number" type="number"/>
+      <select id="playerRole">
+        <option>Goalkeeper</option><option>Left Wing</option><option>Right Wing</option>
+        <option>Left Back</option><option>Right Back</option><option>Centre Back</option><option>Pivot</option>
+      </select>
+      <button onclick="addPlayer()">Add Player</button>
+    </div>
+    <div class="card"><div class="label">Roster</div><div id="playersList"></div></div>
+  </section>
+
+  <section id="training" class="hidden">
+    <div class="card">
+      <div class="label">Add Training</div>
+      <input id="trainingDate" type="date"/>
+      <input id="trainingTime" type="time"/>
+      <input id="trainingLocation" placeholder="Location"/>
+      <button onclick="addTraining()">Add Training</button>
+    </div>
+    <div class="card"><div class="label">Training Sessions</div><div id="trainingList"></div></div>
+  </section>
+
+  <section id="attendance" class="hidden">
+    <div class="card">
+      <div class="label">Take Attendance</div>
+      <select id="attendanceTraining" onchange="renderAttendance()"></select>
+      <div id="attendanceList"></div>
+    </div>
+  </section>
+
+  <section id="fees" class="hidden">
+    <div class="card">
+      <div class="label">Season Fee</div>
+      <input id="seasonFee" type="number" min="0" placeholder="e.g. 1000"/>
+      <button onclick="saveSeasonFee()">Save Fee</button>
+      <div class="muted">One fee amount for all active players in this V1.</div>
+    </div>
+    <div class="card"><div class="label">Payments</div><div id="feesList"></div></div>
+  </section>
+</main>
+
+<nav>
+  <button class="active" data-target="home" onclick="showSection('home',this)">Home</button>
+  <button data-target="players" onclick="showSection('players',this)">Players</button>
+  <button data-target="training" onclick="showSection('training',this)">Training</button>
+  <button data-target="attendance" onclick="showSection('attendance',this)">Attendance</button>
+  <button data-target="fees" onclick="showSection('fees',this)">Fees</button>
+</nav>
+
+<script>
+const store = {
+  players: JSON.parse(localStorage.getItem('hc_players')||'[]'),
+  trainings: JSON.parse(localStorage.getItem('hc_trainings')||'[]'),
+  attendance: JSON.parse(localStorage.getItem('hc_attendance')||'{}'),
+  payments: JSON.parse(localStorage.getItem('hc_payments')||'{}'),
+  seasonFee: Number(localStorage.getItem('hc_seasonFee')||0)
+};
+function persist(){
+  localStorage.setItem('hc_players',JSON.stringify(store.players));
+  localStorage.setItem('hc_trainings',JSON.stringify(store.trainings));
+  localStorage.setItem('hc_attendance',JSON.stringify(store.attendance));
+  localStorage.setItem('hc_payments',JSON.stringify(store.payments));
+  localStorage.setItem('hc_seasonFee',String(store.seasonFee));
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function showSection(id,btn){
+  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderAll();
+}
+function goTo(id){
+  const btn=document.querySelector(`nav button[data-target="${id}"]`);
+  showSection(id,btn);
+}
+function addPlayer(){
+  const name=document.getElementById('playerName').value.trim();
+  if(!name) return alert('Enter player name');
+  store.players.push({id:Date.now(),name,number:document.getElementById('playerNumber').value,role:document.getElementById('playerRole').value,active:true});
+  document.getElementById('playerName').value=''; document.getElementById('playerNumber').value='';
+  persist(); renderAll();
+}
+function removePlayer(id){store.players=store.players.filter(p=>p.id!==id);persist();renderAll()}
+function addTraining(){
+  const date=document.getElementById('trainingDate').value;
+  if(!date) return alert('Select date');
+  store.trainings.push({id:Date.now(),date,time:document.getElementById('trainingTime').value,location:document.getElementById('trainingLocation').value});
+  store.trainings.sort((a,b)=>a.date.localeCompare(b.date));
+  persist();renderAll();
+}
+function removeTraining(id){store.trainings=store.trainings.filter(t=>t.id!==id);delete store.attendance[id];persist();renderAll()}
+function setAttendance(tid,pid,status){
+  store.attendance[tid]=store.attendance[tid]||{}; store.attendance[tid][pid]=status; persist();renderAttendance();renderHome();
+}
+function saveSeasonFee(){
+  store.seasonFee=Number(document.getElementById('seasonFee').value||0);persist();renderFees();renderHome();
+}
+function addPayment(pid){
+  const amt=prompt('Payment amount (AED):');
+  if(amt===null) return; const n=Number(amt); if(!n||n<0) return alert('Invalid amount');
+  store.payments[pid]=(store.payments[pid]||0)+n;persist();renderAll();
+}
+function renderPlayers(){
+  document.getElementById('playersList').innerHTML = store.players.length?`<table><tr><th>#</th><th>Name</th><th>Role</th><th></th></tr>${store.players.map(p=>`<tr><td>${esc(p.number||'-')}</td><td><strong>${esc(p.name)}</strong></td><td>${esc(p.role)}</td><td><button class="danger" onclick="removePlayer(${p.id})">Remove</button></td></tr>`).join('')}</table>`:'<p class="muted">No players yet.</p>';
+}
+function renderTraining(){
+  document.getElementById('trainingList').innerHTML=store.trainings.length?`<table><tr><th>Date</th><th>Time</th><th>Location</th><th></th></tr>${store.trainings.map(t=>`<tr><td>${t.date}</td><td>${esc(t.time||'-')}</td><td>${esc(t.location||'-')}</td><td><button class="danger" onclick="removeTraining(${t.id})">Remove</button></td></tr>`).join('')}</table>`:'<p class="muted">No training sessions yet.</p>';
+  const sel=document.getElementById('attendanceTraining');
+  const old=sel.value;
+  sel.innerHTML=store.trainings.map(t=>`<option value="${t.id}">${t.date} ${esc(t.time||'')} · ${esc(t.location||'')}</option>`).join('');
+  if(old) sel.value=old;
+}
+function renderAttendance(){
+  const tid=document.getElementById('attendanceTraining').value;
+  const box=document.getElementById('attendanceList');
+  if(!tid){box.innerHTML='<p class="muted">Add a training session first.</p>';return}
+  const a=store.attendance[tid]||{};
+  box.innerHTML=store.players.length?store.players.map(p=>{
+    const st=a[p.id]||'Not set';
+    return `<div class="card" style="margin-top:10px"><strong>${esc(p.name)}</strong> <span class="pill">${esc(st)}</span><div class="actions" style="margin-top:10px">
+    <button onclick="setAttendance(${tid},${p.id},'Present')">Present</button>
+    <button class="secondary" onclick="setAttendance(${tid},${p.id},'Absent')">Absent</button>
+    <button class="light" onclick="setAttendance(${tid},${p.id},'Excused')">Excused</button>
+    <button class="light" onclick="setAttendance(${tid},${p.id},'Late')">Late</button></div></div>`}).join(''):'<p class="muted">Add players first.</p>';
+}
+function renderFees(){
+  document.getElementById('seasonFee').value=store.seasonFee||'';
+  document.getElementById('feesList').innerHTML=store.players.length?`<table><tr><th>Player</th><th>Paid</th><th>Due</th><th></th></tr>${store.players.map(p=>{
+    const paid=Number(store.payments[p.id]||0), due=Math.max(0,store.seasonFee-paid);
+    return `<tr><td><strong>${esc(p.name)}</strong></td><td>AED ${paid.toFixed(0)}</td><td>AED ${due.toFixed(0)}</td><td><button onclick="addPayment(${p.id})">Pay</button></td></tr>`}).join('')}</table>`:'<p class="muted">Add players first.</p>';
+}
+function renderHome(){
+  document.getElementById('homePlayers').textContent=store.players.length;
+  let collected=Object.values(store.payments).reduce((a,b)=>a+Number(b||0),0);
+  let expected=store.seasonFee*store.players.length;
+  document.getElementById('homeCollected').textContent='AED '+collected.toFixed(0);
+  document.getElementById('homeOutstanding').textContent='AED '+Math.max(0,expected-collected).toFixed(0);
+  let total=0,present=0;
+  Object.values(store.attendance).forEach(m=>Object.values(m).forEach(s=>{total++;if(s==='Present'||s==='Late')present++;}));
+  document.getElementById('homeAttendance').textContent=(total?Math.round(present/total*100):0)+'%';
+  const today=new Date().toISOString().slice(0,10);
+  const next=store.trainings.find(t=>t.date>=today)||store.trainings[0];
+  document.getElementById('nextTrainingTitle').textContent=next?next.date:'No training scheduled';
+  document.getElementById('nextTrainingMeta').textContent=next?`${next.time||''} ${next.location?'· '+next.location:''}`:'Add your first training session.';
+}
+function renderAll(){renderPlayers();renderTraining();renderAttendance();renderFees();renderHome()}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "HC Dubai Team App",
+  "short_name": "HC Dubai",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F4F6F8",
+  "theme_color": "#0A1B3D",
+  "icons": []
+}
