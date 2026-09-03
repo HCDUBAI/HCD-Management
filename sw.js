@@ -1,10 +1,10 @@
-const CACHE_NAME = 'hc-dubai-v3-20260829';
+const CACHE_NAME = 'hc-dubai-v4-20260903';
 
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './hc_dubai_logo.jpg'
+  './hc_dubai_logo_highres.jpg'
 ];
 
 // Install new service worker
