@@ -1,0 +1,2561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0A1B3D">
+<title>Handball Club Dubai Management V7.7.7</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{--navy:#0A1B3D;--cyan:#00B7E3;--light:#F4F6F8;--muted:#7B8798;--border:#DDE5ED;--red:#D94F4F;--green:#2FAE68;--amber:#D99000;--white:#fff}
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:var(--light);color:var(--navy)}
+header{background:#fff;border-bottom:1px solid var(--border);padding:14px 18px;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:12px;max-width:900px;margin:auto}
+.brand img{width:58px;height:58px;object-fit:contain}
+.brand h1{margin:0;font-size:24px}.brand h1 span{color:var(--cyan)}
+.brand p{margin:4px 0 0;font-size:12px;letter-spacing:1px}
+main{max-width:900px;margin:auto;padding:18px 18px 90px}
+.card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(10,27,61,.035)}
+.label{font-size:12px;font-weight:800;color:var(--cyan);text-transform:uppercase;letter-spacing:.4px}
+h2{font-size:38px;margin:12px 0 22px}h3{margin:10px 0}
+input,select,textarea{width:100%;padding:13px;border:1px solid var(--border);border-radius:12px;margin:7px 0 12px;font-size:16px;background:#fff;color:var(--navy)}
+button{border:0;border-radius:12px;padding:13px 16px;font-size:15px;font-weight:800;background:var(--cyan);color:#fff;margin:3px 2px;cursor:pointer}
+button.secondary{background:#EEF3F8;color:var(--navy)}
+button.dark{background:var(--navy)}
+button.green{background:var(--green)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.hidden{display:none!important}
+.notice{padding:12px 14px;border-radius:12px;margin:10px 0 16px;line-height:1.4}
+.notice.error{background:#FDECEC;color:#9A2F2F}
+.notice.success{background:#EAF8F0;color:#17643C}
+.notice.warn{background:#FFF4D8;color:#7A5300}
+.notice.info{background:#EAF7FC;color:#075D77}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{font-size:28px;font-weight:800;margin-top:6px}
+.muted{color:var(--muted);font-size:13px}
+.training{padding:12px 0;border-bottom:1px solid var(--border)}
+.training:last-child{border-bottom:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#EEF3F8;font-size:11px;font-weight:800}
+.pill.ok{background:#EAF8F0;color:#17643C}
+.pill.pending{background:#FFF4D8;color:#7A5300}
+.pill.due{background:#FDECEC;color:#9A2F2F}
+.plan{border:2px solid var(--border);border-radius:16px;padding:15px;margin:10px 0}
+.plan.active{border-color:var(--cyan);background:#F4FCFE}
+.plan .price{font-size:26px;font-weight:800;margin:6px 0}
+.photo{width:86px;height:86px;border-radius:50%;object-fit:cover;border:3px solid #EEF3F8}#signatureCanvas{width:100%;height:180px;border:1px solid var(--border);border-radius:12px;background:#fff;touch-action:none}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.small{font-size:12px}
+.scroll{overflow-x:auto}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.toolbar>div{flex:1;min-width:140px}
+.sectionTitle{font-size:26px;font-weight:800;margin:8px 0 16px}
+.kpiIncome{border-top:4px solid var(--green)}
+.kpiExpense{border-top:4px solid var(--red)}
+.kpiBalance{border-top:4px solid var(--cyan)}
+.kpiPending{border-top:4px solid var(--amber)}
+.support{background:var(--navy);color:#fff}
+.support .label{color:var(--cyan)}
+.homeHero{background:linear-gradient(145deg,#0A1B3D,#112D5E);color:#fff;border:0;padding:28px 22px;text-align:center}
+.homeLogo{width:112px;height:112px;object-fit:contain;background:#fff;border-radius:24px;padding:8px;margin:4px auto 14px}
+.homeHero h2{font-size:34px;margin:8px 0;color:#fff}
+.homeHero .welcome{font-size:16px;line-height:1.55;max-width:620px;margin:0 auto 22px;color:#D9E7F4}
+.homeActions{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:620px;margin:0 auto}
+.homeActions button{min-height:56px;font-size:16px}
+.homePrice{padding:16px;text-align:center;border:1px solid var(--border);border-radius:16px;background:#fff}
+.homePrice strong{display:block;font-size:19px;margin-bottom:4px}
+.homePrice .price{font-size:24px;font-weight:800;color:var(--navy)}
+.homeSession{max-width:620px;margin:14px auto 0}
+
+/* V7.1 responsive layout */
+.adminUserGrid{display:grid;gap:12px;margin-top:14px}
+.adminUserCard{border:1px solid var(--border);border-radius:16px;padding:15px;background:#fff}
+.adminUserTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+.adminUserName{font-size:18px;font-weight:800}
+.adminFields{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:10px;align-items:end}
+.adminChecks{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:4px 0 10px}
+.adminChecks label{display:flex;align-items:center;gap:6px}
+.adminChecks input[type=checkbox]{width:auto;margin:0}
+.adminActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.adminActions button{margin:0}
+.adminMeta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.adminTrainingCard{border-bottom:1px solid var(--border);padding:14px 0}
+.adminTrainingCard:last-child{border-bottom:0}
+.adminTrainingActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.dangerBtn{background:#FDECEC;color:#9A2F2F}
+.removalOverlay{position:fixed;inset:0;background:rgba(10,27,61,.58);display:flex;align-items:center;justify-content:center;padding:18px;z-index:100}
+.removalModal{width:min(780px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.25)}
+.removalSummary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.removalKpi{background:#F4F6F8;border-radius:12px;padding:12px}
+.removalKpi b{display:block;font-size:22px;margin-top:4px}
+.removalActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.removedRow{display:grid;grid-template-columns:1.4fr 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.responsiveTable{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(min-width:1000px){
+  main{max-width:1180px}
+  #adminView>.card,#financeView>.card{padding:22px}
+}
+@media(max-width:760px){
+  header{padding:10px 12px}
+  .brand img{width:46px;height:46px}.brand h1{font-size:20px}
+  main{padding:12px 12px 80px}
+  .card{padding:14px;border-radius:15px;margin-bottom:12px}
+  h2{font-size:30px}.sectionTitle{font-size:24px}
+  button{min-height:46px}
+  .homeActions{grid-template-columns:1fr}
+  .adminUserTop{flex-direction:column}
+  .adminFields{grid-template-columns:1fr}
+  .adminFields input,.adminFields select{margin-bottom:4px}
+  .adminChecks{justify-content:flex-start}
+  .adminActions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  .adminActions button{width:100%}
+  .adminActions .fullMobile{grid-column:1/-1}
+  .adminTrainingActions{display:grid;grid-template-columns:1fr 1fr}
+  .adminTrainingActions button{width:100%;margin:0}
+  .removalSummary{grid-template-columns:1fr 1fr}
+  .removalActions{display:grid;grid-template-columns:1fr}
+  .removalActions button{width:100%;margin:0}
+  .removedRow{grid-template-columns:1fr}
+  table{min-width:680px}
+  #roster table{min-width:720px}
+  .toolbar{display:grid;grid-template-columns:1fr}
+}
+@media(max-width:420px){
+  .removalSummary{grid-template-columns:1fr}
+  .adminActions,.adminTrainingActions{grid-template-columns:1fr}
+}
+
+@media(max-width:720px){.grid,.grid3,.grid4{grid-template-columns:1fr}h2{font-size:34px}.stat{font-size:26px}table{font-size:12px}}
+
+.v72GroupTitle{font-size:18px;font-weight:900;margin:18px 0 8px;color:var(--navy)}
+.v72SelectGrid{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1fr;gap:10px;align-items:end}
+.financeOptionGrid{display:grid;grid-template-columns:1.2fr .7fr .8fr .7fr;gap:10px;align-items:end}
+@media(max-width:760px){
+  .v72SelectGrid,.financeOptionGrid{grid-template-columns:1fr}
+}
+
+
+.financeCharts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0}
+.chartCard{min-height:300px}.chartWrap{position:relative;height:240px;margin-top:10px}
+.alertRow{border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:9px 0;background:#fff}
+.alertTop{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.ageBadge{display:inline-block;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800;margin-left:6px}
+.age-pending{background:#e8f1ff;color:#174ea6}.age-overdue{background:#fff3cd;color:#7a5700}
+.age-high{background:#ffe3c2;color:#9a3f00}.age-critical{background:#ffe0e0;color:#a40000}
+.expenseOther{display:none}
+.periodToolbar{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:end;margin-top:8px}
+.periodToolbar button{margin:0}
+.compactSummary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;list-style:none}
+.compactSummary::-webkit-details-marker{display:none}
+.compactSummary strong{display:block;margin-top:3px}
+.compactBody{margin-top:14px;padding-top:12px;border-top:1px solid #e7edf3}
+.nativeBars{display:flex;align-items:flex-end;gap:12px;height:205px;padding:20px 10px 28px;border-bottom:1px solid #e7edf3}
+.nativeBarCol{flex:1;min-width:54px;text-align:center;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.nativeBarValue{font-size:11px;font-weight:700;margin-bottom:5px}
+.nativeBar{width:70%;max-width:58px;min-height:3px;margin:0 auto;border-radius:6px 6px 0 0;background:#7eb4d9}
+.nativeBarLabel{font-size:10px;font-weight:700;margin-top:6px;word-break:break-word}
+.nativeLegend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;margin-top:8px}
+
+@media(max-width:760px){.periodToolbar{grid-template-columns:1fr 1fr}.periodToolbar button{width:100%}}
+.chartEmpty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:#7b8494;font-size:14px;background:#fff}
+.chartEmpty.hidden{display:none}
+.ageingNative{height:100%;display:flex;align-items:flex-end;justify-content:space-around;gap:14px;padding:24px 14px 8px}
+.ageCol{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-width:0}
+.ageValue{font-weight:800;margin-bottom:6px}
+.ageBar{width:min(64px,75%);min-height:3px;border-radius:8px 8px 3px 3px;background:#64b5df}
+.ageLabel{font-size:10px;font-weight:800;text-align:center;margin-top:8px;line-height:1.2}
+@media(max-width:760px){.financeCharts{grid-template-columns:1fr}.chartCard{min-height:280px}}
+
+
+.financeKpis{grid-template-columns:repeat(3,1fr)}
+.seasonChartWrap{height:330px}
+.compactAgeingCard{padding-top:16px!important;padding-bottom:16px!important}
+.ageingHeader{display:flex;align-items:center;gap:8px;margin:5px 0 8px}
+.compactAgeing{height:115px!important}
+.budgetToolbar{display:grid;grid-template-columns:minmax(170px,240px) 1fr;gap:14px;align-items:end;margin-bottom:12px}
+.budgetInput{min-width:110px}
+.budgetVariancePositive{font-weight:700}
+.budgetVarianceNegative{font-weight:700}
+@media(max-width:760px){
+  .financeKpis{grid-template-columns:1fr 1fr}
+  .budgetToolbar{grid-template-columns:1fr}
+  .seasonChartWrap{height:285px}
+}
+
+
+.miniKpi{padding:12px;border:1px solid var(--line,#ddd);border-radius:12px;background:var(--card,#fff)}
+.miniKpi strong{font-size:22px}
+#playerRegistrySummary{margin:10px 0 14px}
+@media(max-width:760px){#playerRegistrySummary{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><div class="brand"><img src="hc_dubai_logo_highres.jpg" alt="HC Dubai"><div><h1>HC <span>DUBAI</span></h1><p>HANDBALL CLUB</p></div></div></header>
+<main>
+<section id="homeView">
+  <div class="card homeHero">
+    <img class="homeLogo" src="hc_dubai_logo_highres.jpg" alt="Handball Club Dubai">
+    <div class="label">WELCOME TO</div>
+    <h2>HANDBALL CLUB DUBAI</h2>
+    <p class="welcome">Join our handball activities in Dubai, manage your training registrations and keep track of your sessions in one simple place.</p>
+    <div class="homeActions">
+      <button class="dark" onclick="showLogin()">MEMBER LOGIN</button>
+      <button onclick="showJoin()">JOIN A TRAINING</button>
+    </div>
+    <div id="homeSession" class="homeSession"></div>
+  </div>
+  <div class="card">
+    <div class="label">Training Options</div><div id="homeTrainingOptionsDynamic"></div>
+  </div>
+  <div class="card support">
+    <div class="label">HC DUBAI INFO</div>
+    <p>For information or assistance:</p>
+    <strong>WhatsApp: +971 58 558 8323</strong><br><br>
+    <button class="green" onclick="window.open('https://wa.me/971585588323','_blank')">CONTACT US ON WHATSAPP</button>
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.18)">
+      <button class="secondary" onclick="showManagementLogin()">🔒 MANAGEMENT AREA</button>
+      <div class="small" style="margin-top:7px;color:#D9E7F4">Restricted access for authorized HC Dubai management only.</div>
+    </div>
+  </div>
+</section>
+
+<section id="authView" class="hidden">
+  <div id="loginCard" class="card">
+    <div id="loginLabel" class="label">HC Dubai</div><h2 id="loginTitle">Sign in</h2>
+    <div id="managementLoginNotice"></div>
+    <div id="authMsg"></div>
+    <input id="loginEmail" type="email" placeholder="Email">
+    <input id="loginPassword" type="password" placeholder="Password">
+    <button onclick="signIn()">Sign in</button>
+    <button id="loginCreateAccountBtn" class="secondary" onclick="showJoin()">Create account</button>
+    <button class="secondary" onclick="showHome()">← Back to Home</button>
+  </div>
+  <div id="signupCard" class="card hidden">
+    <div class="label">Join HC Dubai</div>
+    <h3>Create your account</h3>
+    <input id="signupName" placeholder="Full name">
+    <input id="signupEmail" type="email" placeholder="Email">
+    <input id="signupPhone" type="tel" placeholder="WhatsApp Number (e.g. +971 58...)">
+    <input id="signupPassword" type="password" placeholder="Password (min 6 chars)">
+    <button onclick="signUp()">Create account</button>
+    <button class="secondary" onclick="showLogin()">I already have an account</button>
+    <div class="notice info">Your HC Dubai status is assigned automatically from actual attendance. <strong>Member</strong> status requires at least 3 attended trainings in the last 3 months, including at least 1 in the last 30 days.</div>
+  </div>
+</section>
+
+<section id="appView" class="hidden">
+  <div class="card">
+    <div class="row">
+      <div id="photoWrap"></div>
+      <div style="flex:1">
+        <div class="label">Signed in</div>
+        <div id="who" style="font-size:22px;font-weight:800;margin:6px 0"></div>
+        <div id="roleHint" class="muted"></div>
+      </div>
+      <button class="secondary" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+  <div id="globalMsg"></div>
+
+  <section id="pendingApprovalView" class="hidden">
+    <div class="sectionTitle">Registration Pending Approval</div>
+    <div class="card">
+      <div class="notice warn"><strong>TECHNICAL APPROVAL REQUIRED</strong><br>Your registration has been received and is awaiting approval by Handball Club Dubai TECHNICAL.</div>
+      <p>You can sign in and check this status, but training registration and payment/package activation will become available only after your account has been approved.</p>
+      <div class="muted">For assistance: HC DUBAI INFO · WhatsApp +971 58 558 8323</div>
+    </div>
+  </section>
+
+  <section id="playerView" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div><div class="label">My HC Dubai Status</div><div id="membershipBadge" style="font-size:24px;font-weight:800;margin-top:6px">PARTICIPANT</div></div>
+        <div id="activeBadge"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">My Profile</div>
+      <div class="grid">
+        <div><label class="small">Date of birth *</label><input id="pDob" type="date"></div>
+        <div><label class="small">Gender</label><select id="pGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Prefer not to say</option></select></div>
+        <div><label class="small">WhatsApp Number *</label><input id="pPhone" placeholder="+971 ..."></div>
+        <div><label class="small">Position / Role</label>
+<select id="pPosition" name="hc_player_position" autocomplete="off">
+  <option value="">Select position...</option>
+  <option>Goalkeeper</option>
+  <option>Left Wing</option>
+  <option>Right Wing</option>
+  <option>Left Back</option>
+  <option>Centre Back / Playmaker</option>
+  <option>Right Back</option>
+  <option>Pivot / Line Player</option>
+  <option>Universal / Multiple Positions</option>
+  <option>Not Assigned</option>
+</select></div>
+      </div>
+      <label class="small">Profile photo</label>
+      <input id="pPhoto" type="file" accept="image/*" capture="user">
+      <button onclick="savePlayerProfile()">Save profile</button>
+      <div class="muted">* Date of birth and WhatsApp Number are required before training registration or package payment request.</div>
+    </div>
+
+    <div id="safetyRulesCard" class="card">
+      <div class="label">First Registration · Required</div>
+      <h3>Player Safety & Participation Rules</h3>
+      <div id="safetyRulesStatus"></div>
+      <div id="safetyRulesBody">
+        <p class="small">Handball is a physical sport and participation in Handball Club Dubai activities is voluntary. Every player is responsible for taking reasonable care of their own health, safety and physical condition.</p>
+        <ol class="small" style="line-height:1.65;padding-left:22px">
+          <li>Complete an appropriate warm-up before participating.</li>
+          <li>Use appropriate protective equipment where required.</li>
+          <li>Do not participate if injured, unwell or physically unable to play safely.</li>
+          <li>Immediately inform the Coach or another responsible team member if you feel unwell or become injured.</li>
+          <li>Stop participating immediately if an injury occurs and seek appropriate medical attention when necessary.</li>
+          <li>Follow the Coach's instructions and behave responsibly to help maintain a safe environment for everyone.</li>
+        </ol>
+        <p class="small">I understand that handball involves inherent risks of injury and that I participate voluntarily and accept the normal risks associated with participation.</p>
+        <label class="small" style="display:flex;gap:10px;align-items:flex-start;margin:14px 0">
+          <input id="safetyRulesCheck" type="checkbox" style="width:auto;margin-top:3px">
+          <span>I have read, understood and agree to follow the HC Dubai Player Safety & Participation Rules.</span>
+        </label>
+        <button id="safetyRulesBtn" onclick="acknowledgeSafetyRules()">ACKNOWLEDGE & CONTINUE</button>
+        <div class="muted">Rules version HC-DUBAI-SAFETY-V1. You will only be asked again if the rules are materially updated.</div>
+      </div>
+    </div>
+
+    <div id="waiverCard" class="card hidden">
+      <div class="label">Minor Player – Required</div>
+      <h3>Parental Consent, Liability Waiver & Emergency Authorization</h3>
+      <div id="waiverStatus"></div>
+      <div id="waiverForm">
+        <p class="small">I, the undersigned parent or legal guardian, consent to the minor player's participation in training sessions, matches, tournaments and other handball-related activities organized or coordinated by Handball Club Dubai. I understand that sporting activities involve inherent risks of injury, including falls, collisions and physical contact.</p>
+        <p class="small">To the extent permitted by applicable law, I agree not to hold Handball Club Dubai, its management, coaches, volunteers or representatives responsible for injury, loss or damage arising from the normal and inherent risks associated with participation, except where liability cannot legally be excluded or limited.</p>
+        <p class="small">I confirm, to the best of my knowledge, that the minor is fit to participate. If I cannot be contacted promptly in an emergency, I authorize HC Dubai representatives to arrange reasonable first aid or emergency medical assistance.</p>
+        <input id="gName" placeholder="Parent / Legal Guardian full name">
+        <input id="gRelationship" placeholder="Relationship to player">
+        <input id="gPhone" placeholder="Guardian mobile number">
+        <input id="gEmail" type="email" placeholder="Guardian email">
+        <input id="gEmergencyName" placeholder="Emergency contact name">
+        <input id="gEmergencyPhone" placeholder="Emergency contact number">
+        <div class="plan">
+          <strong>Photography, Video & Social Media Consent</strong>
+          <p class="small">I authorize Handball Club Dubai to photograph and/or record the minor during club activities and to use such photographs and videos for club communication, promotional and marketing purposes, including the Club's website and official social media channels.</p>
+          <select id="mediaConsent">
+            <option value="false">I DO NOT CONSENT</option>
+            <option value="true">I CONSENT</option>
+          </select>
+        </div>
+        <p class="small"><strong>Electronic Signature:</strong> Sign with your finger below. By signing electronically, I confirm that I am the parent/legal guardian, that the information is accurate, and that I have read and understood this document.</p>
+        <canvas id="signatureCanvas"></canvas>
+        <button class="secondary" onclick="clearSignature()">Clear signature</button>
+        <button onclick="signWaiver()">Sign & Submit Waiver</button>
+        <div class="muted">Waiver version HC-DUBAI-MINOR-V1. Media consent is optional and does not affect participation.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">Choose Your Plan</div>
+      <div id="planStatus"></div>
+      <div id="planSingle" class="plan"><strong id="planSingleName">Single Session</strong><div id="planSinglePrice" class="price">AED 60</div><div class="muted">Pay per training session.</div><button onclick="choosePlan('single')">Choose Single Session</button></div>
+      <div id="plan4" class="plan"><strong id="plan4Name">Package 4</strong><div id="plan4Price" class="price">AED 210</div><div class="muted">4 training sessions · Save AED 30.</div><button onclick="choosePlan('package4')">Choose Package 4</button></div>
+      <div id="plan8" class="plan"><strong id="plan8Name">Package 8</strong><div id="plan8Price" class="price">AED 410</div><div class="muted">8 training sessions · Save AED 70.</div><button onclick="choosePlan('package8')">Choose Package 8</button></div>
+      <div id="participantExpiryNote" class="notice warn hidden"><strong>Participant package policy:</strong> packages and remaining credits expire after 6 months of inactivity. A reminder will be generated before expiry.</div>
+    </div>
+
+    <div id="playerPaymentCard" class="card hidden">
+      <div class="label">Payment Required</div>
+      <div id="playerPaymentContent"></div>
+    </div>
+
+    <div id="homeTrainingOptionsLegacy" class="grid3">
+      <div class="card"><div class="label">Current Plan</div><div id="billing" class="stat">Not selected</div></div>
+      <div class="card"><div class="label">Trainings Remaining</div><div id="credits" class="stat">—</div></div>
+      <div class="card"><div class="label">Payment Status</div><div id="paymentState" class="stat">—</div></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Next Training</div>
+      <div id="nextTraining" class="stat">No training scheduled</div>
+      <div id="nextMeta" class="muted"></div>
+      <div style="margin-top:14px">
+        <button id="registerBtn" onclick="registerTraining()">Register / I'm attending</button>
+        <button id="cancelRegistrationBtn" class="secondary hidden" onclick="cancelMyRegistration()">Cancel my registration</button>
+      </div>
+    </div>
+    <div id="playerNotice"></div>
+    <div class="card">
+      <div class="label">Notifications</div>
+      <div id="playerNotifications"><div class="muted">No notifications.</div></div>
+    </div>
+    <div class="card">
+      <div class="label">My Training History</div>
+      <div id="history"></div>
+    </div>
+  </section>
+
+  <section id="adminView" class="hidden">
+    <div class="sectionTitle">Management Control Center</div>
+
+    <div class="card">
+      <div class="alertTop">
+        <div><div class="label">Action Required</div><h3 style="margin:4px 0">Actions Requiring Attention <span id="technicalAlertCount" class="pill">0</span></h3></div>
+      </div>
+      <div id="technicalAlerts"><div class="muted">No open management alerts.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Create Training</div>
+      <input id="trTitle" value="Training" placeholder="Title">
+      <input id="trDate" type="date">
+      <input id="trTime" type="time">
+      <input id="trLocation" placeholder="Location">
+      <input id="trMapUrl" type="url" placeholder="Google Maps link (optional)">
+      <div class="muted">Open the venue in Google Maps → Share → Copy link, then paste it here.</div>
+      <textarea id="trNotes" placeholder="Notes"></textarea>
+      <button onclick="createTraining()">Create training</button>
+    </div>
+
+    <div class="card">
+      <div class="label">Players / Access / Status</div>
+      <div id="profiles" class="scroll"></div>
+    </div>
+
+    <div class="card compactCard">
+      <details>
+        <summary class="compactSummary">
+          <span><span class="label">Player Registry Report</span><strong>Registered Players</strong></span>
+          <span class="muted">Expand</span>
+        </summary>
+        <div class="compactBody">
+          <div id="playerRegistrySummary" class="grid3"></div>
+          <div class="actions">
+            <button class="secondary" onclick="printPlayerRegistry()">Print / Save PDF</button>
+          </div>
+          <div id="playerRegistryReport" class="responsiveTable"></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="label">Trainings</div>
+      <div id="trainings"></div>
+    </div>
+
+    <div class="card">
+      <div class="label">Removed Players / Readmission</div>
+      <div class="muted">Removed players stay outside the operational list. A future registration using the same known email or WhatsApp requires TECHNICAL review.</div>
+      <div id="removedPlayers" style="margin-top:10px"><div class="muted">No removed players loaded.</div></div>
+    </div>
+
+    <div id="rosterCard" class="card hidden">
+      <div class="label">Training Roster / Attendance</div>
+      <div id="rosterTitle" class="stat"></div>
+      <div id="rosterMeta" class="muted"></div>
+      <div class="muted" style="margin-top:8px">On mobile, swipe horizontally if the roster has more columns.</div><div id="roster" class="responsiveTable" style="margin-top:12px"></div>
+      <button class="secondary" onclick="closeRoster()">Close roster</button>
+    </div>
+  </section>
+
+  <section id="financeView" class="hidden">
+    <div class="card">
+      <div class="alertTop">
+        <div><div class="label">Management Alerts</div><h3 style="margin:4px 0">Actions Requiring Attention <span id="managementAlertCount" class="pill">0</span></h3></div>
+      </div>
+      <div id="managementAlerts"><div class="muted">No open management alerts.</div></div>
+    </div>
+    <div class="sectionTitle">Finance Dashboard</div>
+    <div class="card financePeriodCard">
+      <div class="label">Financial Period</div>
+      <div class="periodToolbar">
+        <div><label class="small">From</label><input id="reportFrom" type="date"></div>
+        <div><label class="small">To</label><input id="reportTo" type="date"></div>
+        <button onclick="applyFinancePeriod()">Apply</button>
+        
+      </div>
+      <div class="muted">The selected period controls Actual KPI values, histories and Finance Report. The Season Trend uses the season selected in Manage Budget.</div>
+    </div>
+    <div class="grid3 financeKpis">
+      <div class="card kpiIncome"><div class="label">Budget Income</div><div id="budgetIncomeKpi" class="stat">AED 0</div></div>
+      <div class="card kpiIncome"><div class="label">Actual Income</div><div id="income" class="stat">AED 0</div></div>
+      <div class="card kpiExpense"><div class="label">Budget Expenses</div><div id="budgetExpenseKpi" class="stat">AED 0</div></div>
+      <div class="card kpiExpense"><div class="label">Actual Expenses</div><div id="expTotal" class="stat">AED 0</div></div>
+      <div class="card kpiBalance"><div class="label">Expected Balance</div><div id="expectedBalanceKpi" class="stat">AED 0</div></div>
+      <div class="card kpiBalance"><div class="label">Actual Balance</div><div id="balance" class="stat">AED 0</div></div>
+      <div class="card kpiPending"><div class="label">Pending Payments</div><div id="pendingCount" class="stat">0</div></div>
+    </div>
+    <div id="financeMode" class="notice"></div>
+    <div class="card chartCard">
+      <div class="label">Season Financial Trend</div>
+      <h3>Budget vs Actual · September → June</h3>
+      <div class="muted">Cumulative income and expenses across the selected HC Dubai season.</div>
+      <div class="chartWrap seasonChartWrap">
+        <canvas id="seasonFinanceChart"></canvas>
+        <div id="seasonChartEmpty" class="chartEmpty hidden">No budget or actual financial data for this season yet.</div>
+      </div>
+    </div>
+
+    <div class="card compactAgeingCard">
+      <div class="label">Payment Ageing</div>
+      <div class="ageingHeader"><strong>Outstanding Payments</strong><span id="ageingTotalPill" class="pill">0</span></div>
+      <div id="ageingNative" class="ageingNative compactAgeing"></div>
+      <div id="ageingEmpty" class="muted">No outstanding payments.</div>
+    </div>
+    <div class="card">
+      <div class="label">Finance Report</div>
+      <h3>Print / Save / Share</h3>
+      <button class="dark" onclick="printFinanceReport()">Print / Save PDF</button>
+      <button class="secondary" onclick="shareFinanceReport()">Share Report</button>
+      <div class="muted">Uses the phone/browser's free print, Save as PDF and native share functions.</div>
+    </div>
+    <div id="manageBudgetCard" class="card compactCard">
+      <details>
+        <summary class="compactSummary">
+          <span><span class="label">Season Budget</span><strong>Manage Budget vs Actual</strong></span>
+          <span class="muted">Expand</span>
+        </summary>
+        <div class="compactBody">
+          <div class="budgetToolbar">
+            <div>
+              <label class="small">Season</label>
+              <select id="budgetSeasonStart" onchange="loadSeasonBudget()"></select>
+            </div>
+            <div class="muted">FINANCE sets monthly planned income and planned expenses by category. Actual values are calculated automatically from recorded payments and expenses.</div>
+          </div>
+          <div class="card" style="padding:14px;margin:0 0 14px">
+            <div class="label">Monthly Budget Income</div>
+            <div id="budgetIncomeEditor" class="responsiveTable"></div>
+          </div>
+          <div class="card" style="padding:14px;margin:0">
+            <div class="label">Monthly Budget Expenses by Category</div>
+            <div class="muted" style="margin-bottom:10px">Enter the planned amount for each expense category. Monthly totals feed the Season Financial Trend automatically.</div>
+            <div id="budgetExpenseEditor" class="responsiveTable"></div>
+          </div>
+          <div id="budgetReadOnlyNote" class="muted" style="margin-top:10px"></div>
+        </div>
+      </details>
+    </div>
+
+    <div id="financeTrainingOptionsCard" class="card compactCard">
+  <details>
+    <summary class="compactSummary">
+      <span><span class="label">Training Options – Home Page</span><strong>Manage Training Options</strong></span>
+      <span class="muted">Expand</span>
+    </summary>
+    <div class="compactBody">
+      <div class="label">Training Options – Home Page</div>
+      <h3>Manage Training Options</h3>
+      <div class="muted">FINANCE can update the options shown on the Home page.</div>
+      <div id="financeTrainingOptions" style="margin-top:12px">
+  <div class="training">
+    <div class="financeOptionGrid">
+      <div><label class="small">Name</label><input id="std_n_1" value="Single Session"></div>
+      <div><label class="small">Sessions</label><input id="std_s_1" type="number" min="1" value="1"></div>
+      <div><label class="small">Price AED</label><input id="std_p_1" type="number" min="0" step="0.01" value="60"></div>
+    </div>
+    <div style="margin-top:8px"><label class="small">Description</label><input id="std_d_1" value="Pay per training session."></div>
+    <label style="display:block;margin-top:8px"><input id="std_a_1" type="checkbox" checked> Active</label>
+    <div class="actions"><button onclick="saveStandardFinanceTrainingOption(1)">Save</button></div>
+  </div>
+
+  <div class="training">
+    <div class="financeOptionGrid">
+      <div><label class="small">Name</label><input id="std_n_4" value="Package 4"></div>
+      <div><label class="small">Sessions</label><input id="std_s_4" type="number" min="1" value="4"></div>
+      <div><label class="small">Price AED</label><input id="std_p_4" type="number" min="0" step="0.01" value="210"></div>
+    </div>
+    <div style="margin-top:8px"><label class="small">Description</label><input id="std_d_4" value="4 training sessions."></div>
+    <label style="display:block;margin-top:8px"><input id="std_a_4" type="checkbox" checked> Active</label>
+    <div class="actions"><button onclick="saveStandardFinanceTrainingOption(4)">Save</button></div>
+  </div>
+
+  <div class="training">
+    <div class="financeOptionGrid">
+      <div><label class="small">Name</label><input id="std_n_8" value="Package 8"></div>
+      <div><label class="small">Sessions</label><input id="std_s_8" type="number" min="1" value="8"></div>
+      <div><label class="small">Price AED</label><input id="std_p_8" type="number" min="0" step="0.01" value="410"></div>
+    </div>
+    <div style="margin-top:8px"><label class="small">Description</label><input id="std_d_8" value="8 training sessions."></div>
+    <label style="display:block;margin-top:8px"><input id="std_a_8" type="checkbox" checked> Active</label>
+    <div class="actions"><button onclick="saveStandardFinanceTrainingOption(8)">Save</button></div>
+  </div>
+</div>
+      <button onclick="addFinanceTrainingOption()">Add Option</button>
+    </div>
+  </details>
+</div>
+    <div class="card compactCard hidden">
+      <details>
+        <summary class="compactSummary"><span><span class="label">Record Payment</span><strong>Register Received Payment</strong></span><span class="muted">Expand</span></summary>
+        <div class="compactBody">
+          <div class="grid2">
+            <div><label>Player</label><select id="manualPayPlayer" onchange="resolveManualPaymentSelection()"></select></div>
+            <div><label>Payment For</label><input id="manualPayFor" value="Select a player" readonly></div>
+            <div><label>Amount AED</label><input id="manualPayAmount" type="number" readonly></div>
+            <input id="manualPayType" type="hidden">
+            <input id="manualPaySourceId" type="hidden">
+            <div><label>Payment Method</label><select id="manualPayMethod"><option value="">Select...</option><option value="CASH">CASH</option><option value="BANK TRANSFER">BANK TRANSFER</option><option value="CAREEM LINK">CAREEM LINK</option></select></div>
+            <div><label>Payment Date</label><input id="manualPayDate" type="date"></div>
+            <div><label>Reference / Note</label><input id="manualPayNote" placeholder="Optional"></div>
+          </div>
+          <div class="actions"><button onclick="recordManualPayment()">CONFIRM PAYMENT</button></div><div id="manualPayMsg" class="msg hidden"></div>
+        </div>
+      </details>
+    </div>
+    <div class="card"><div class="label">Payment History</div><div id="paymentHistory" class="scroll"></div></div>
+    <div class="card">
+      <div class="label">Club Email Delivery</div>
+      <div id="emailDeliveryStatus" class="muted">Checking email queue…</div>
+      <button class="secondary" onclick="loadEmailDeliveryStatus()">REFRESH EMAIL STATUS</button>
+    </div>
+    <div id="accountantActions" class="hidden">
+      <div id="pendingPackagePaymentsSection" class="card"><div class="label">Pending Package Payments</div><div id="pendingPackages"></div></div>
+      <div id="outstandingSingleFeesSection" class="card"><div class="label">Outstanding Single Fees</div><div id="singleFees"></div></div>
+      <div class="card compactCard">
+  <details>
+    <summary class="compactSummary">
+      <span><span class="label">Add Expense</span><strong>Register New Expense</strong></span>
+      <span class="muted">Expand</span>
+    </summary>
+    <div class="compactBody">
+        <div class="label">Add Expense</div>
+        <input id="expDate" type="date">
+        <label class="small">Category</label>
+        <select id="expCategory" onchange="toggleExpenseOther('category')">
+          <option value="">Select category...</option>
+          <option>Venue / Court Rental</option>
+          <option>Equipment</option>
+          <option>Referee / Officials</option>
+          <option>Tournament / Competition Fees</option>
+          <option>Marketing & Social Media</option>
+          <option>Uniforms / Apparel</option>
+          <option>Medical / First Aid</option>
+          <option>Transportation</option>
+          <option>Food & Refreshments</option>
+          <option>Administration</option>
+          <option>Banking / Fees</option>
+          <option>Coaching / Technical</option>
+          <option value="__new__">Other / New...</option>
+        </select>
+        <input id="expCategoryOther" class="expenseOther" placeholder="New category">
+        <input id="expAmount" type="number" min="0" step="0.01" placeholder="Amount (AED)">
+        <label class="small">Payment Method</label>
+        <select id="expMethod">
+          <option value="">Select payment method...</option>
+          <option value="CASH">CASH</option>
+          <option value="BANK TRANSFER">BANK TRANSFER</option>
+          <option value="CAREEM LINK">CAREEM LINK</option>
+        </select>
+        <input id="expRef" placeholder="Reference / receipt">
+        <textarea id="expDesc" placeholder="Description / note"></textarea>
+        <button onclick="addExpense()">Add expense</button>
+      </div>
+  </details>
+</div>
+    </div>
+    <div class="card"><div class="label">Expense History</div><div id="expenseHistory" class="scroll"></div></div>
+  </section>
+
+  <div class="card support">
+    <div class="label">HC DUBAI INFO</div>
+    <p>For information or assistance:</p>
+    <strong>WhatsApp: +971 58 558 8323</strong><br><br>
+    <button class="green" onclick="window.open('https://wa.me/971585588323','_blank')">CONTACT US ON WHATSAPP</button>
+  </div>
+</section>
+</main>
+
+
+<div id="expenseDeleteOverlay" class="removalOverlay hidden">
+  <div class="removalModal">
+    <div class="label">Delete Expense</div>
+    <h3 id="expenseDeleteTitle">Confirm Expense Deletion</h3>
+    <label>Deletion Reason</label>
+    <select id="expenseDeleteReason">
+      <option value="">Select...</option>
+      <option value="DUPLICATE ENTRY">DUPLICATE ENTRY</option>
+      <option value="ENTRY CREATED BY MISTAKE">ENTRY CREATED BY MISTAKE</option>
+      <option value="EXPENSE CANCELLED / NOT INCURRED">EXPENSE CANCELLED / NOT INCURRED</option>
+    </select>
+    <div class="actions" style="margin-top:14px">
+      <button class="danger" onclick="confirmDeleteExpense()">Delete Expense</button>
+      <button class="secondary" onclick="closeExpenseDeleteModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="removalReasonOverlay" class="removalOverlay hidden">
+  <div class="removalModal">
+    <div class="label">Controlled Player Removal</div>
+    <h3 id="removalReasonPlayerName">Select Removal Reason</h3>
+    <div class="grid">
+      <div><label>Removal Reason</label><select id="removalReasonSelect" onchange="toggleRemovalReasonNote()">
+        <option value="">Select...</option>
+        <option>Duplicate / Test Account</option><option>Player Request</option><option>Long-Term Inactivity</option>
+        <option>Relocated / Left UAE</option><option>No Longer Participating</option><option>Repeated Unpaid Fees</option>
+        <option>Administrative / Registration Issue</option><option>Breach of Club Rules</option>
+        <option>Safety / Conduct Issue</option><option>Other</option>
+      </select></div>
+      <div><label>Future Re-registration</label><select id="removalReregStatus">
+        <option value="review">Technical review required</option>
+        <option value="eligible">Eligible</option>
+        <option value="blocked">Blocked</option>
+      </select></div>
+    </div>
+    <div id="removalReasonNoteWrap" class="hidden"><label>Technical Note</label><textarea id="removalReasonNote" placeholder="Objective factual note"></textarea></div>
+    <div class="removalActions"><button class="secondary" onclick="closeRemovalReasonModal()">Cancel</button><button onclick="continuePlayerRemoval()">Continue to Final Summary</button></div>
+  </div>
+</div>
+
+<div id="removalOverlay" class="removalOverlay hidden">
+  <div class="removalModal">
+    <div class="label">Controlled Player Removal</div>
+    <h3 id="removalPlayerName">Player Final Summary</h3>
+    <div id="removalBody"></div>
+    <div class="removalActions">
+      <button class="secondary" onclick="closeRemovalModal()">Close</button>
+      <button class="dark" onclick="printRemovalReport()">Print / Save PDF</button>
+      <button id="removalEmailBtn" class="secondary hidden" onclick="openRemovalEmail()">Prepare removal email</button>
+      <button id="removalFinalizeBtn" class="dangerBtn" onclick="finalizePlayerRemoval()">NOTIFY & REMOVE PLAYER</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// HC DUBAI V8.3 - Finance receipt confirmation + full club email workflow hooks
+const SUPABASE_URL="https://tmumqexadofvktsqwlnu.supabase.co";
+const SUPABASE_KEY="sb_publishable_GJUesAyLLq_qzokIFY-1Bg_f09qpNWq";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const HC_PAYMENT_LINK="https://cpay.me/393421904300";
+const SAFETY_RULES_VERSION="HC-DUBAI-SAFETY-V1";
+let currentUser=null,profile=null,nextTrainingRow=null,waiver=null,financePayments=[],financeExpenses=[],financePending=[],adminTrainings=[];let ctx,drawing=false;let loginMode='member';let removalState=null;
+
+const el=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const money=v=>'AED '+Number(v||0).toLocaleString(undefined,{maximumFractionDigits:2});
+function showMsg(id,text,type='success'){el(id).innerHTML=`<div class="notice ${type}">${esc(text)}</div>`}
+function planName(x){return x==='single'?'Single Session':x==='package4'?'Package 4':x==='package8'?'Package 8':'Not selected'}
+function isMinor(d){if(!d)return false;const b=new Date(d),n=new Date();let a=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate()))a--;return a<18}
+async function queueClubEmailEvent(eventType,payload={}){
+  try{
+    const {error}=await sb.rpc('queue_club_email_event_v820',{
+      p_event_type:eventType,
+      p_payload:payload
+    });
+    if(error)console.warn('Email queue:',error.message);
+  }catch(e){console.warn('Email queue unavailable',e)}
+}
+
+async function triggerClubEmailDelivery(){
+  try{
+    const {error}=await sb.functions.invoke('process-club-email-outbox-v820',{body:{source:'app'}});
+    if(error)console.warn('Email delivery:',error.message);
+  }catch(e){console.warn('Email sender not yet activated',e)}
+}
+
+function goToManagementAction(targetId){
+  const target=el(targetId);
+  if(!target)return;
+  target.scrollIntoView({behavior:'smooth',block:'start'});
+  target.style.outline='3px solid rgba(82,174,224,.45)';
+  setTimeout(()=>{target.style.outline='';},1800);
+}
+
+
+function setLoginMode(mode){
+  loginMode=mode;
+  if(!el('loginTitle'))return;
+  if(mode==='management'){
+    el('loginLabel').textContent='Restricted Access';
+    el('loginTitle').textContent='Management Area';
+    el('managementLoginNotice').innerHTML='<div class="notice warn">Authorized TECHNICAL and FINANCE accounts only.</div>';
+    el('loginCreateAccountBtn').classList.add('hidden');
+  }else{
+    el('loginLabel').textContent='HC Dubai';
+    el('loginTitle').textContent='Member Login';
+    el('managementLoginNotice').innerHTML='';
+    el('loginCreateAccountBtn').classList.remove('hidden');
+  }
+}
+function showHome(){
+  el('homeView').classList.remove('hidden');el('authView').classList.add('hidden');el('appView').classList.add('hidden');
+  el('loginCard').classList.remove('hidden');el('signupCard').classList.add('hidden');setLoginMode('member');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showLogin(){
+  el('homeView').classList.add('hidden');el('authView').classList.remove('hidden');el('appView').classList.add('hidden');
+  el('loginCard').classList.remove('hidden');el('signupCard').classList.add('hidden');setLoginMode('member');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showManagementLogin(){
+  el('homeView').classList.add('hidden');el('authView').classList.remove('hidden');el('appView').classList.add('hidden');
+  el('loginCard').classList.remove('hidden');el('signupCard').classList.add('hidden');setLoginMode('management');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showJoin(){
+  el('homeView').classList.add('hidden');el('authView').classList.remove('hidden');el('appView').classList.add('hidden');
+  el('loginCard').classList.add('hidden');el('signupCard').classList.remove('hidden');setLoginMode('member');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function openMyAccount(){await loadSession(true)}
+
+async function signUp(){
+  const full_name=el('signupName').value.trim();
+  const email=el('signupEmail').value.trim();
+  const phone=el('signupPhone').value.trim();
+  const password=el('signupPassword').value;
+
+  if(!full_name || !email || !phone || !password){
+    return showMsg('authMsg','Full name, email, WhatsApp Number and password are required.','error');
+  }
+
+  const eligibility=await sb.rpc('check_registration_eligibility',{p_email:email,p_phone:phone});
+  if(eligibility.error)return showMsg('authMsg',eligibility.error.message,'error');
+  if(eligibility.data && eligibility.data.allowed===false){
+    return showMsg('authMsg',eligibility.data.message||'Your registration requires TECHNICAL review. Please contact HC DUBAI INFO.','error');
+  }
+
+  const{data,error}=await sb.auth.signUp({
+    email,
+    password,
+    options:{data:{full_name,phone}}
+  });
+  if(error)return showMsg('authMsg',error.message,'error');
+  showMsg('authMsg',data.session?'Account created. Your registration is pending TECHNICAL approval.':'Account created. After any required email confirmation, your registration will remain pending TECHNICAL approval.');
+  if(data.session)loadSession(true);
+}
+async function signIn(){
+  const{error}=await sb.auth.signInWithPassword({email:el('loginEmail').value.trim(),password:el('loginPassword').value});
+  if(error)return showMsg('authMsg',error.message,'error');
+  const requestedMode=loginMode;
+  const ok=await loadSession(false);
+  if(!ok)return;
+  if(requestedMode==='management' && !['admin','accountant'].includes(profile.role)){
+    await sb.auth.signOut();
+    currentUser=null;profile=null;
+    setLoginMode('management');
+    return showMsg('authMsg','Access denied. This area is restricted to authorized HC Dubai management accounts.','error');
+  }
+  await loadSession(true);
+}
+async function signOut(){await sb.auth.signOut();location.reload()}
+
+async function loadSession(openApp=true){
+  const{data:{session}}=await sb.auth.getSession(); if(!session)return false;
+  currentUser=session.user;
+  try{
+    const blockedCheck=await sb.rpc('current_user_is_blocked');
+    if(!blockedCheck.error && blockedCheck.data===true){
+      await sb.auth.signOut();
+      currentUser=null;
+      showMsg('authMsg','Your account requires review by Handball Club Dubai. Please contact HC DUBAI INFO.','error');
+      return false;
+    }
+  }catch(e){}
+  try{await sb.rpc('run_participant_maintenance')}catch(e){}
+  const{data,error}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
+  if(error)return showMsg('authMsg',error.message,'error');
+  profile=data;
+  const pendingApproval=profile.role==='player' && profile.approval_status==='pending';
+  const rejectedApproval=profile.role==='player' && profile.approval_status==='rejected';
+  if(profile.deleted_at || rejectedApproval || (!profile.active && !pendingApproval)){
+    await sb.auth.signOut();
+    currentUser=null;
+    const msg=profile.deleted_at?'This account has been removed from the HC Dubai app.':rejectedApproval?'Your registration was not approved. Please contact HC DUBAI INFO if you need assistance.':'This account is inactive. Please contact HC DUBAI INFO.';
+    showMsg('authMsg',msg,'error');
+    return false;
+  }
+  if(profile.role==='player' && profile.approval_status!=='pending'){
+    try{await sb.rpc('recalculate_player_membership',{p_player_id:currentUser.id})}catch(e){}
+    const refreshed=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
+    if(!refreshed.error)profile=refreshed.data;
+  }
+  if(!openApp)return true;
+  el('homeView').classList.add('hidden');el('authView').classList.add('hidden');el('appView').classList.remove('hidden');
+  const accessLabel=profile.role==='admin'?'TECHNICAL':profile.role==='accountant'?'FINANCE':(profile.membership_type||'participant').toUpperCase();
+  const positionLabel=(profile.position||'').trim();
+  el('who').textContent=`${profile.full_name||currentUser.email} · ${accessLabel}`;
+  if(profile.fee_exempt){
+    el('roleHint').innerHTML=`${positionLabel?esc(positionLabel.toUpperCase())+' · ':''}<strong>FEE EXEMPT</strong>${profile.role==='admin'?' · Management access · Finance read-only':profile.role==='accountant'?' · Finance approval & reporting':''}`;
+  }else{
+    el('roleHint').textContent=profile.role==='admin'?'Management access · Finance read-only':profile.role==='accountant'?'Finance approval & reporting':'HC Dubai player account';
+  }
+
+  ['pendingApprovalView','playerView','adminView','financeView'].forEach(id=>el(id).classList.add('hidden'));
+  el('accountantActions').classList.add('hidden');
+  await loadPhoto();
+
+  if(profile.role==='player' && profile.approval_status==='pending'){el('pendingApprovalView').classList.remove('hidden');return true}
+  if(profile.role==='player'){el('playerView').classList.remove('hidden');await loadPlayer()}
+  if(profile.role==='admin'){el('adminView').classList.remove('hidden');el('financeView').classList.remove('hidden');await loadAdmin();await loadFinance()}
+  if(profile.role==='accountant'){el('financeView').classList.remove('hidden');el('accountantActions').classList.remove('hidden');await loadFinance()}
+}
+
+async function loadPhoto(){
+  el('photoWrap').innerHTML='';
+  if(profile?.photo_path){
+    const{data}=await sb.storage.from('player-photos').createSignedUrl(profile.photo_path,3600);
+    if(data?.signedUrl)el('photoWrap').innerHTML=`<img class="photo" src="${data.signedUrl}" alt="Player photo">`;
+  }
+}
+
+async function acknowledgeSafetyRules(){
+  if(!el('safetyRulesCheck')?.checked){
+    return showMsg('globalMsg','Please read and acknowledge the Player Safety & Participation Rules before continuing.','error');
+  }
+  const {data,error}=await sb.rpc('acknowledge_player_safety_v778',{p_version:SAFETY_RULES_VERSION});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Safety rules acknowledged.');
+  await loadSession();
+}
+
+function openHCPaymentLink(){
+  window.open(HC_PAYMENT_LINK,'_blank','noopener,noreferrer');
+}
+
+async function declarePackagePaymentCompleted(requestId){
+  if(!confirm('Confirm that you have completed the payment using the HC Dubai payment link?'))return;
+  const {data,error}=await sb.rpc('player_declare_package_payment_v778',{p_request_id:requestId});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Payment declared. Your package is provisionally active.','success');
+  await loadSession();
+}
+
+async function savePlayerProfile(){
+  if(!el('pDob').value)return showMsg('globalMsg','Date of birth is required.','error');
+  if(!el('pPhone').value.trim())return showMsg('globalMsg','WhatsApp Number is required.','error');
+  const{error}=await sb.rpc('update_my_player_profile',{
+    p_date_of_birth:el('pDob').value,p_gender:el('pGender').value,p_phone:el('pPhone').value,
+    p_position:el('pPosition').value,p_emergency_contact_name:null,
+    p_emergency_contact_phone:null
+  });
+  if(error)return showMsg('globalMsg',error.message,'error');
+  if(el('pPhoto').files[0]){
+    const f=el('pPhoto').files[0];
+    const path=`${currentUser.id}/profile-${Date.now()}.${(f.name.split('.').pop()||'jpg').toLowerCase()}`;
+    const up=await sb.storage.from('player-photos').upload(path,f,{upsert:true});
+    if(up.error)return showMsg('globalMsg','Profile saved, but photo upload failed: '+up.error.message,'error');
+    const pe=await sb.from('profiles').update({photo_path:path}).eq('id',currentUser.id);
+    if(pe.error)return showMsg('globalMsg','Photo uploaded, but profile link failed: '+pe.error.message,'error');
+  }
+  showMsg('globalMsg','Player profile updated.');
+  await loadSession();
+}
+
+
+async function syncSelectablePlanDisplay(){
+  const{data,error}=await sb.rpc('public_list_home_training_options');
+  if(error||!data)return;
+  const bySessions=n=>(data||[]).find(x=>Number(x.sessions)===n);
+  const one=bySessions(1),four=bySessions(4),eight=bySessions(8);
+  if(one){el('planSingleName').textContent=one.name;el('planSinglePrice').textContent=`AED ${Number(one.price_aed).toFixed(0)}`;}
+  if(four){el('plan4Name').textContent=four.name;el('plan4Price').textContent=`AED ${Number(four.price_aed).toFixed(0)}`;}
+  if(eight){el('plan8Name').textContent=eight.name;el('plan8Price').textContent=`AED ${Number(eight.price_aed).toFixed(0)}`;}
+}
+
+async function loadPlayer(){
+  await syncSelectablePlanDisplay();
+  el('pDob').value=profile.date_of_birth||'';el('pGender').value=profile.gender||'';el('pPhone').value=profile.phone||'';
+  const safetyAckOk = profile.safety_rules_version===SAFETY_RULES_VERSION && !!profile.safety_rules_acknowledged_at;
+  el('safetyRulesStatus').innerHTML=safetyAckOk
+    ? '<div class="notice success">✓ SAFETY & PARTICIPATION RULES ACKNOWLEDGED</div>'
+    : '<div class="notice warn">Acknowledgement is required before selecting a plan or registering for training.</div>';
+  el('safetyRulesBody').classList.toggle('hidden',safetyAckOk);
+
+  el('pPosition').value=profile.position||'';
+  el('membershipBadge').textContent=(profile.membership_type||'participant').toUpperCase();
+  el('activeBadge').innerHTML=profile.active?'<span class="pill ok">ACTIVE</span>':'<span class="pill due">INACTIVE</span>';
+  el('participantExpiryNote').classList.toggle('hidden',profile.membership_type!=='participant');
+
+  const w=await sb.from('player_waivers').select('*').eq('player_id',currentUser.id).eq('status','signed').maybeSingle();
+  waiver=w.data||null;
+  const minor=isMinor(profile.date_of_birth);
+  el('waiverCard').classList.toggle('hidden',!minor);
+  if(minor){
+    el('waiverStatus').innerHTML=waiver?'<div class="notice success">✓ PARENTAL WAIVER SIGNED</div>':'<div class="notice error">Parental waiver required before training registration or package activation.</div>';
+    el('waiverForm').classList.toggle('hidden',!!waiver);
+    if(!waiver)setTimeout(initCanvas,50);
+  }
+
+  document.querySelectorAll('.plan').forEach(x=>x.classList.remove('active'));
+  if(profile.plan_selected){
+    if(profile.billing_mode==='single')el('planSingle').classList.add('active');
+    if(profile.billing_mode==='package4')el('plan4').classList.add('active');
+    if(profile.billing_mode==='package8')el('plan8').classList.add('active');
+  }
+  el('billing').textContent=profile.plan_selected?planName(profile.billing_mode):'Not selected';
+
+  let remaining=0,total=profile.billing_mode==='package4'?4:profile.billing_mode==='package8'?8:0;
+  const bonusRes=await sb.from('training_bonus_credits').select('id').eq('player_id',currentUser.id).eq('status','available');
+  const bonusCount=(bonusRes.data||[]).length;
+  if(profile.plan_selected&&profile.billing_mode!=='single'){
+    const{data:packs}=await sb.from('package_purchases').select('credits_remaining').eq('player_id',currentUser.id).eq('status','active');
+    remaining=(packs||[]).reduce((s,p)=>s+Number(p.credits_remaining||0),0);
+    el('credits').textContent=remaining;
+  }else if(bonusCount){
+    el('credits').textContent=`${bonusCount} BONUS`;
+  }else el('credits').textContent='—';
+
+  const{data:req}=await sb.from('payment_requests').select('*').eq('player_id',currentUser.id).eq('status','pending').order('requested_at',{ascending:false}).limit(1);
+  const pendingReq=req?.[0]||null;
+  if(pendingReq?.payment_declared_at && profile.billing_mode!=='single')el('credits').textContent=`${bonusCount} provisional`;
+  el('playerPaymentCard').classList.add('hidden');
+  el('playerPaymentContent').innerHTML='';
+  if(pendingReq){
+    const declared=!!pendingReq.payment_declared_at;
+    const pkgLabel=pendingReq.plan_code==='PACKAGE4'?'Package 4':'Package 8';
+    if(declared){
+      el('paymentState').textContent='PROVISIONAL';
+      el('planStatus').innerHTML='<div class="notice warn"><strong>PROVISIONALLY ACTIVE · PAYMENT VERIFICATION PENDING</strong><br>Your package can be used now while HC Dubai FINANCE verifies the payment.</div>';
+      el('playerPaymentCard').classList.remove('hidden');
+      el('playerPaymentContent').innerHTML=`<div class="notice success"><strong>PACKAGE PROVISIONALLY ACTIVE</strong><br>Your ${esc(pkgLabel)} is now provisionally active and you can register for training immediately.<br><br>Your payment of <strong>${money(pendingReq.amount_aed||0)}</strong> is awaiting verification by HC Dubai FINANCE. Once verified, your package will be fully confirmed.<br><span class="small">If the payment cannot be verified, the provisional package may be cancelled and the account/payment status adjusted accordingly.</span></div>`;
+    }else{
+      el('paymentState').textContent='PAYMENT REQUIRED';
+      el('planStatus').innerHTML='<div class="notice warn">Package selected · payment required.</div>';
+      el('playerPaymentCard').classList.remove('hidden');
+      el('playerPaymentContent').innerHTML=`<div class="price">${money(pendingReq.amount_aed||0)}</div><p>Complete payment to activate your ${esc(pkgLabel)}.</p><div class="notice info"><strong>Complete payment using the Careem app on your phone.</strong><br>Open this page on your mobile device and tap <strong>PAY NOW</strong>.</div><button onclick="openHCPaymentLink()">PAY NOW</button><button class="secondary" onclick="declarePackagePaymentCompleted('${pendingReq.id}')">I HAVE COMPLETED PAYMENT</button><div class="muted">After completing payment, return here and select <strong>I HAVE COMPLETED PAYMENT</strong>. Your package will become provisionally active immediately while FINANCE verifies receipt.</div>`;
+    }
+  }
+  else if(!profile.plan_selected){el('paymentState').textContent='NOT SELECTED';el('planStatus').innerHTML='<div class="notice info">Choose Single Session, Package 4 or Package 8.</div>'}
+  else if(profile.billing_mode==='single'){
+    el('paymentState').textContent=bonusCount?'BONUS AVAILABLE':'PER SESSION';
+    el('planStatus').innerHTML=bonusCount
+      ?`<div class="notice success">${bonusCount} bonus training credit${bonusCount===1?'':'s'} available. The bonus will be used automatically on your next registration.</div>`
+      :'<div class="notice info">Single Session selected — AED 60 per training.</div>';
+  }
+  else if(remaining>0||bonusCount>0){
+    el('paymentState').textContent=bonusCount?'PAID + BONUS':'PAID';
+    el('planStatus').innerHTML=`<div class="notice success">Package active.${bonusCount?' '+bonusCount+' bonus training credit'+(bonusCount===1?'':'s')+' available.':''}</div>`;
+  }
+  else{el('paymentState').textContent='NOT ACTIVE';el('planStatus').innerHTML='<div class="notice warn">Package selected but not yet active.</div>'}
+
+  const now=new Date().toISOString();
+  const{data:tr,error:tErr}=await sb.from('trainings').select('*').eq('cancelled',false).eq('registration_open',true).gte('starts_at',now).order('starts_at').limit(1);
+  if(tErr)return showMsg('globalMsg',tErr.message,'error');
+  nextTrainingRow=tr?.[0]||null;
+
+  const rr=await sb.from('training_registrations').select('training_id,payment_status,payment_source,attendance,registered_at,late_cancellation,charge_waived,trainings(title,starts_at,location,map_url,cancelled)').eq('player_id',currentUser.id).order('registered_at',{ascending:false}).limit(30);
+  const regs=rr.data||[];
+  const already=nextTrainingRow&&regs.some(r=>r.training_id===nextTrainingRow.id);
+
+  if(nextTrainingRow){
+    el('nextTraining').textContent=nextTrainingRow.title||'Training';
+    const mapLink=nextTrainingRow.map_url?` · <a href="${esc(nextTrainingRow.map_url)}" target="_blank" rel="noopener">📍 OPEN IN GOOGLE MAPS</a>`:'';
+    el('nextMeta').innerHTML=`${esc(new Date(nextTrainingRow.starts_at).toLocaleString())}${nextTrainingRow.location?' · '+esc(nextTrainingRow.location):''}${mapLink}`;
+    el('registerBtn').classList.toggle('hidden',!!already);
+    el('registerBtn').disabled=false;
+    el('registerBtn').textContent="Register / I'm attending";
+    el('cancelRegistrationBtn').classList.toggle('hidden',!already);
+  }else{
+    el('nextTraining').textContent='No training scheduled';
+    el('nextMeta').textContent='';
+    el('registerBtn').disabled=true;
+    el('registerBtn').classList.remove('hidden');
+    el('registerBtn').textContent="Register / I'm attending";
+    el('cancelRegistrationBtn').classList.add('hidden');
+  }
+
+  const unpaid=regs.some(r=>r.payment_status==='due'&&r.attendance==='present');
+  el('playerNotice').innerHTML='';
+  if(!profile.active)el('playerNotice').innerHTML='<div class="notice error">Profile inactive. Contact HC DUBAI INFO.</div>';
+  else if(!profile.plan_selected)el('playerNotice').innerHTML='<div class="notice warn">Choose a payment plan before registering for training.</div>';
+  else if(minor&&!waiver)el('playerNotice').innerHTML='<div class="notice error">Parental waiver must be signed before registration and payment.</div>';
+  else if(profile.billing_mode==='single'&&unpaid)el('playerNotice').innerHTML='<div class="notice error">Previous training payment is outstanding. Payment is required before registering for the next training.</div>';
+  else if(profile.billing_mode!=='single'&&remaining<=0)el('playerNotice').innerHTML='<div class="notice error">No active training credits. Complete payment before registration.</div>';
+
+  el('history').innerHTML=regs.length?regs.map(r=>{
+    const map=r.trainings?.map_url?` · <a href="${esc(r.trainings.map_url)}" target="_blank" rel="noopener">Google Maps</a>`:'';
+    const payLabel=r.payment_source==='bonus'?'BONUS CREDIT':String(r.payment_status||'').replaceAll('_',' ').toUpperCase();
+    const cancelInfo=r.attendance==='cancelled'?(r.late_cancellation?' · LATE CANCELLATION – FEE/CREDIT FORFEITED':r.charge_waived?' · CANCELLED – NO CHARGE':' · CANCELLED'):'';
+    return `<div class="training"><strong>${esc(r.trainings?.title||'Training')}</strong><br><span class="muted">${r.trainings?.starts_at?new Date(r.trainings.starts_at).toLocaleString():''}${r.trainings?.location?' · '+esc(r.trainings.location):''}${map}</span><br>${esc(payLabel)} · ${esc(r.attendance)}${esc(cancelInfo)}</div>`;
+  }).join(''):'<div class="muted">No registrations yet.</div>';
+
+  await loadPlayerNotifications();
+}
+
+function initCanvas(){
+  const c=el('signatureCanvas');if(!c)return;
+  const dpr=window.devicePixelRatio||1,r=c.getBoundingClientRect();
+  c.width=r.width*dpr;c.height=180*dpr;ctx=c.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.lineWidth=2;ctx.lineCap='round';ctx.strokeStyle='#0A1B3D';clearSignature();
+  const pos=e=>{const rr=c.getBoundingClientRect();return{x:e.clientX-rr.left,y:e.clientY-rr.top}};
+  c.onpointerdown=e=>{drawing=true;c.setPointerCapture?.(e.pointerId);const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)};
+  c.onpointermove=e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke()};
+  c.onpointerup=c.onpointercancel=c.onpointerleave=()=>drawing=false;
+}
+function clearSignature(){if(!ctx)return;ctx.clearRect(0,0,el('signatureCanvas').width,el('signatureCanvas').height)}
+const WAIVER_TEXT=`Handball Club Dubai Parental Consent, Liability Waiver & Emergency Authorization. I consent to the minor player's participation in HC Dubai handball activities and acknowledge the inherent risks of sporting participation. To the extent permitted by applicable law, I agree not to hold Handball Club Dubai, its management, coaches, volunteers or representatives responsible for injury, loss or damage arising from normal and inherent risks, except where liability cannot legally be excluded or limited. I confirm the minor is fit to participate to the best of my knowledge and authorize reasonable first aid or emergency medical assistance if I cannot be contacted promptly. Media consent is recorded separately.`;
+async function signWaiver(){
+  if(!el('gName').value.trim()||!el('gRelationship').value.trim()||!el('gPhone').value.trim()||!el('gEmail').value.trim()||!el('gEmergencyName').value.trim()||!el('gEmergencyPhone').value.trim())
+    return showMsg('globalMsg','Complete all guardian and emergency contact fields.','error');
+  const sig=el('signatureCanvas').toDataURL('image/png');
+  const{error}=await sb.from('player_waivers').insert({
+    player_id:currentUser.id,
+    guardian_name:el('gName').value.trim(),
+    guardian_relationship:el('gRelationship').value.trim(),
+    guardian_phone:el('gPhone').value.trim(),
+    guardian_email:el('gEmail').value.trim(),
+    emergency_contact_name:el('gEmergencyName').value.trim(),
+    emergency_contact_phone:el('gEmergencyPhone').value.trim(),
+    media_consent:el('mediaConsent').value==='true',
+    waiver_version:'HC-DUBAI-MINOR-V1',
+    waiver_text:WAIVER_TEXT,
+    signature_data:sig,
+    status:'signed'
+  });
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg','Parental waiver signed successfully.');
+  if(profile.billing_mode==='package4'||profile.billing_mode==='package8'){
+    await sb.rpc('choose_my_plan',{p_plan:profile.billing_mode});
+  }
+  await loadSession();
+}
+
+async function choosePlan(plan){
+  if(!(profile?.safety_rules_version===SAFETY_RULES_VERSION && profile?.safety_rules_acknowledged_at)){
+    return showMsg('globalMsg','Please acknowledge the Player Safety & Participation Rules before selecting a plan.','error');
+  }
+  const{data,error}=await sb.rpc('choose_my_plan',{p_plan:plan});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Plan updated.');
+  await loadSession();
+}
+async function registerTraining(){
+  if(!(profile?.safety_rules_version===SAFETY_RULES_VERSION && profile?.safety_rules_acknowledged_at)){
+    return showMsg('globalMsg','Please acknowledge the Player Safety & Participation Rules before registering for training.','error');
+  }
+  const{data,error}=await sb.rpc('register_for_training',{p_training_id:nextTrainingRow.id});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Registration confirmed.');
+  await triggerClubEmailDelivery();
+  await loadSession();
+}
+
+async function cancelMyRegistration(){
+  if(!nextTrainingRow)return;
+  const start=new Date(nextTrainingRow.starts_at);
+  const hours=(start.getTime()-Date.now())/3600000;
+  const late=hours<=2;
+  const msg=late
+    ? 'This training starts within 2 hours. If you cancel now, the fee is non-refundable and any session credit will be forfeited. Continue?'
+    : 'Cancel your registration? If eligible, your package credit will be restored or a paid Single Session will become a bonus training credit.';
+  if(!confirm(msg))return;
+  const{data,error}=await sb.rpc('cancel_my_training_registration',{p_training_id:nextTrainingRow.id});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Registration cancelled.',late?'warn':'success');
+  await loadSession();
+}
+
+async function loadPlayerNotifications(){
+  const box=el('playerNotifications'); if(!box)return;
+  const{data,error}=await sb.from('player_notifications').select('*').eq('player_id',currentUser.id).order('created_at',{ascending:false}).limit(20);
+  if(error){box.innerHTML='<div class="muted">Notifications unavailable.</div>';return}
+  const rows=data||[];
+  box.innerHTML=rows.length?rows.map(n=>`<div class="training"><strong>${esc(n.title||'HC Dubai')}</strong><br><span class="muted">${new Date(n.created_at).toLocaleString()}</span><br>${esc(n.message||'')}${n.read_at?'':'<br><button class="secondary" onclick="markNotificationRead(\''+n.id+'\')">Mark as read</button>'}</div>`).join(''):'<div class="muted">No notifications.</div>';
+}
+
+async function markNotificationRead(id){
+  const{error}=await sb.from('player_notifications').update({read_at:new Date().toISOString()}).eq('id',id).eq('player_id',currentUser.id);
+  if(error)return showMsg('globalMsg',error.message,'error');
+  await loadPlayerNotifications();
+}
+
+async function createTraining(){
+  if(!el('trDate').value||!el('trTime').value)return showMsg('globalMsg','Select date and time.','error');
+  const starts_at=new Date(`${el('trDate').value}T${el('trTime').value}`).toISOString();
+  const mapUrl=el('trMapUrl').value.trim();
+  if(mapUrl && !/^https?:\/\//i.test(mapUrl))return showMsg('globalMsg','Google Maps link must start with http:// or https://','error');
+  const{error}=await sb.from('trainings').insert({title:el('trTitle').value.trim()||'Training',starts_at,location:el('trLocation').value.trim()||null,map_url:mapUrl||null,notes:el('trNotes').value.trim()||null,created_by:currentUser.id});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg','Training created.');
+  el('trMapUrl').value='';
+  await loadAdmin();
+}
+
+async function cancelTrainingAdmin(id,title){
+  if(!confirm(`Cancel "${title}"? All registered players will be notified. Eligible package credits will be restored and paid Single Sessions will receive one bonus training credit.`))return;
+  const{data,error}=await sb.rpc('cancel_training_and_notify',{p_training_id:id});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Training cancelled and players notified.');
+  await triggerClubEmailDelivery();
+  await loadAdmin();
+  await loadFinance();
+}
+
+
+const PLAYER_POSITIONS=['Not Assigned','Goalkeeper','Left Wing','Right Wing','Left Back','Centre Back / Playmaker','Right Back','Pivot / Line Player','Universal / Multiple Positions'];
+const STAFF_POSITIONS=['Head Coach','Assistant Coach','Goalkeeper Coach','Team Manager','Physio','Strength & Conditioning Coach','Medical Staff','Technical Staff','Marketing','Accountant','Other Staff'];
+function roleLabel(role){return role==='admin'?'TECHNICAL':role==='accountant'?'FINANCE':'PLAYER'}
+function positionOptions(type,current){
+  const arr=type==='staff'?STAFF_POSITIONS:PLAYER_POSITIONS;
+  return arr.map(x=>`<option value="${esc(x)}" ${String(current||'')===x?'selected':''}>${esc(x)}</option>`).join('');
+}
+
+
+
+function registryDate(v){
+  if(!v)return '—';
+  const d=new Date(String(v).length===10 ? String(v)+'T00:00:00' : v);
+  if(isNaN(d))return '—';
+  return d.toLocaleDateString('en-GB');
+}
+function ageFromDob(dob){
+  if(!dob)return '';
+  const d=new Date(dob+'T00:00:00'); if(isNaN(d))return '';
+  const now=new Date(); let a=now.getFullYear()-d.getFullYear();
+  const m=now.getMonth()-d.getMonth();
+  if(m<0||(m===0&&now.getDate()<d.getDate()))a--;
+  return a>=0?a:'';
+}
+async function loadPlayerRegistryReport(){
+  const report=el('playerRegistryReport'),summary=el('playerRegistrySummary');
+  if(!report||!summary)return;
+  const seasonStart=seasonStartFromDate();
+  const seasonFrom=`${seasonStart}-09-01T00:00:00`;
+  const seasonTo=`${seasonStart+1}-06-30T23:59:59`;
+
+  const [pr,tr]=await Promise.all([
+    sb.from('profiles').select('*').eq('person_type','player').order('full_name'),
+    sb.from('training_registrations').select('player_id,attendance,trainings(starts_at)').eq('attendance','present')
+  ]);
+  if(pr.error){report.innerHTML=`<div class="msg error">${esc(pr.error.message)}</div>`;return;}
+  const players=(pr.data||[]);
+  const attendance=tr.error?[]:(tr.data||[]);
+
+  const rows=players.map(p=>{
+    const attended=attendance.filter(a=>String(a.player_id)===String(p.id)&&a.trainings?.starts_at);
+    const seasonAtt=attended.filter(a=>a.trainings.starts_at>=seasonFrom&&a.trainings.starts_at<=seasonTo);
+    const last=attended.map(a=>a.trainings.starts_at).sort().reverse()[0]||'';
+    const plan=p.billing_mode==='package4'?'Package 4':p.billing_mode==='package8'?'Package 8':p.billing_mode==='single'?'Single Session':'—';
+    const credits=p.remaining_credits??p.package_credits??'—';
+    return `<tr>
+      <td>${esc(p.full_name||'')}</td><td>${esc(p.jersey_number??'—')}</td><td>${esc(p.position||'Not Assigned')}</td>
+      <td>${esc(p.gender||'—')}</td><td>${p.date_of_birth?registryDate(p.date_of_birth):'—'}</td><td>${ageFromDob(p.date_of_birth)||'—'}</td>
+      <td>${esc(p.whatsapp_number||p.whatsapp||'—')}</td><td>${String(p.membership_type||'participant').toUpperCase()}</td>
+      <td>${p.active===false?'INACTIVE':'ACTIVE'}</td><td>${p.created_at?registryDate(p.created_at):'—'}</td>
+      <td>${last?registryDate(last):'—'}</td><td>${seasonAtt.length}</td><td>${plan}</td><td>${credits}</td><td>${p.fee_exempt?'YES':'NO'}</td>
+    </tr>`;
+  }).join('');
+
+  const active=players.filter(p=>p.active!==false).length;
+  const members=players.filter(p=>p.membership_type==='member').length;
+  const participants=players.filter(p=>p.membership_type!=='member').length;
+  const male=players.filter(p=>String(p.gender||'').toLowerCase().startsWith('m')).length;
+  const female=players.filter(p=>String(p.gender||'').toLowerCase().startsWith('f')).length;
+  summary.innerHTML=[
+    ['Registered',players.length],['Active',active],['Members',members],['Participants',participants],['Male',male],['Female',female]
+  ].map(x=>`<div class="miniKpi"><div class="label">${x[0]}</div><strong>${x[1]}</strong></div>`).join('');
+
+  report.innerHTML=`<table id="playerRegistryTable"><tr>
+    <th>Full Name</th><th>Jersey #</th><th>Position</th><th>Gender</th><th>DOB</th><th>Age</th>
+    <th>WhatsApp</th><th>Type</th><th>Status</th><th>Registered</th><th>Last Attended</th>
+    <th>Season Attendance</th><th>Current Plan</th><th>Credits</th><th>Fee Exempt</th>
+  </tr>${rows||'<tr><td colspan="15">No registered players.</td></tr>'}</table>`;
+}
+function printPlayerRegistry(){
+  const content=el('playerRegistryReport')?.innerHTML||'';
+  const summary=el('playerRegistrySummary')?.innerHTML||'';
+  const w=window.open('','_blank');
+  if(!w)return alert('Allow pop-ups to print the report.');
+  w.document.write(`<html><head><title>HC Dubai Player Registry</title><style>
+    body{font-family:Arial,sans-serif;padding:22px;color:#111}h1{margin:0 0 4px}.meta{margin-bottom:18px;color:#555}
+    table{border-collapse:collapse;width:100%;font-size:10px}th,td{border:1px solid #bbb;padding:5px;text-align:left}th{background:#eee}
+    .grid3{display:flex;gap:12px;margin:12px 0}.miniKpi{border:1px solid #ccc;padding:8px 12px}.label{font-size:9px;text-transform:uppercase;color:#666}
+    @media print{@page{size:landscape;margin:8mm}}
+  </style></head><body><h1>Handball Club Dubai</h1><div class="meta">Player Registry Report · Season ${seasonStartFromDate()}/${seasonStartFromDate()+1} · ${new Date().toLocaleDateString()}</div><div class="grid3">${summary}</div>${content}</body></html>`);
+  w.document.close();w.focus();setTimeout(()=>w.print(),250);
+}
+
+async function loadAdmin(){
+  try{await loadPlayerRegistryReport()}catch(e){console.error('Player Registry',e);if(el('playerRegistryReport'))el('playerRegistryReport').innerHTML=`<div class="msg error">Unable to load Player Registry: ${esc(e?.message||String(e))}</div>`;}
+  const{data:ps,error}=await sb.from('profiles').select('*').is('deleted_at',null).order('full_name');
+  if(error)return showMsg('globalMsg',error.message,'error');
+  const{data:ts,error:tErr}=await sb.from('trainings').select('*').order('starts_at',{ascending:false});
+  if(tErr)return showMsg('globalMsg',tErr.message,'error');
+  adminTrainings=ts||[];
+
+  const people=ps||[];
+  const staff=people.filter(p=>(p.person_type||((p.role==='admin'||p.role==='accountant')?'staff':'player'))==='staff');
+  const players=people.filter(p=>(p.person_type||((p.role==='admin'||p.role==='accountant')?'staff':'player'))==='player');
+
+  const card=(p,type)=>`
+    <div class="adminUserCard">
+      <div class="adminUserTop">
+        <div>
+          <div class="adminUserName">${esc(p.full_name||'Person')}</div>
+          <div class="adminMeta">
+            <span class="pill">${roleLabel(p.role)}</span>
+            ${type==='staff'?'<span class="pill ok">STAFF</span>':`<span class="pill ${(p.membership_type||'participant')==='member'?'ok':'pending'}">${esc((p.membership_type||'participant').toUpperCase())}</span>`}
+            ${p.position?`<span class="muted">${esc(p.position)}</span>`:''}
+            ${p.fee_exempt?'<span class="pill ok">FEE EXEMPT</span>':''}
+            ${p.active?'<span class="pill ok">ACTIVE</span>':'<span class="pill due">INACTIVE</span>'}
+          </div>
+        </div>
+      </div>
+      <div class="v72SelectGrid">
+        <div><label class="small">Name</label><input id="n_${p.id}" value="${esc(p.full_name||'')}"></div>
+        <div><label class="small">WhatsApp / Phone</label><input id="ph_${p.id}" value="${esc(p.phone||'')}"></div>
+        <div><label class="small">Person Type</label><select id="pt_${p.id}" onchange="refreshV72Position('${p.id}')">
+          <option value="player" ${type==='player'?'selected':''}>Player</option>
+          <option value="staff" ${type==='staff'?'selected':''}>Staff</option>
+        </select></div>
+        <div><label class="small">Position</label><select id="pos_${p.id}">${positionOptions(type,p.position)}</select></div>
+        <div><label class="small">Access Role</label><select id="r_${p.id}">
+          <option value="player" ${p.role==='player'?'selected':''}>Player</option>
+          <option value="admin" ${p.role==='admin'?'selected':''}>Technical</option>
+          <option value="accountant" ${p.role==='accountant'?'selected':''}>Finance</option>
+        </select></div>
+      </div>
+      <div class="adminChecks">
+        <label class="small"><input id="fee_${p.id}" type="checkbox" ${p.fee_exempt?'checked':''}> Fee Exempt</label>
+        <label class="small"><input id="act_${p.id}" type="checkbox" ${p.active?'checked':''}> Active</label>
+        ${type==='player'?'<span class="muted">Member / Participant status is calculated automatically from real attendance.</span>':''}
+      </div>
+      <div class="adminActions">
+        <button onclick="saveV72Person('${p.id}','${p.role}')">Save</button>
+        ${p.id===currentUser.id?'':`<button class="secondary" onclick="toggleAdminUserActive('${p.id}',${p.active?'false':'true'})">${p.active?'Deactivate':'Reactivate'}</button>`}
+        ${type==='player'&&p.id!==currentUser.id?`<button class="dangerBtn fullMobile" onclick="openRemovalReasonModal('${p.id}','${esc(p.full_name||'Player').replaceAll("'","&#39;")}','${p.role}')">Remove Player</button>`:''}
+      </div>
+    </div>`;
+
+  el('profiles').innerHTML=`
+    <div class="v72GroupTitle">Staff & Management</div>
+    <div class="adminUserGrid">${staff.length?staff.map(p=>card(p,'staff')).join(''):'<div class="muted">No staff profiles.</div>'}</div>
+    <div class="v72GroupTitle">Players</div>
+    <div class="adminUserGrid">${players.length?players.map(p=>card(p,'player')).join(''):'<div class="muted">No active players.</div>'}</div>`;
+
+  el('trainings').innerHTML=adminTrainings.length?adminTrainings.map(t=>{
+    const map=t.map_url?` · <a href="${esc(t.map_url)}" target="_blank" rel="noopener">📍 Google Maps</a>`:'';
+    const status=t.cancelled?'<span class="pill due">CANCELLED</span>':(t.registration_open?'<span class="pill ok">REGISTRATION OPEN</span>':'<span class="pill pending">REGISTRATION CLOSED</span>');
+    const toggle=t.cancelled?'':`<button class="secondary" onclick="toggleRegistration('${t.id}',${t.registration_open?'false':'true'})">${t.registration_open?'Close registration':'Open registration'}</button>`;
+    const cancel=t.cancelled?'':`<button class="secondary" onclick="cancelTrainingAdmin('${t.id}','${esc(t.title||'Training').replaceAll("'","&#39;")}')">Cancel training</button>`;
+    return `<div class="adminTrainingCard">
+      <strong>${esc(t.title||'Training')}</strong> ${status}<br>
+      <span class="muted">${new Date(t.starts_at).toLocaleString()}${t.location?' · '+esc(t.location):''}${map}</span>
+      ${t.notes?`<br><span class="muted">${esc(t.notes)}</span>`:''}
+      <div class="adminTrainingActions">
+        <button onclick="openRoster('${t.id}')">Roster / Attendance</button>
+        ${t.cancelled?'':`<button class="secondary" onclick="editTraining('${t.id}')">Edit</button>`}
+        ${toggle}${cancel}
+      </div>
+    </div>`;
+  }).join(''):'<div class="muted">No trainings yet.</div>';
+
+  await loadRemovedPlayers();
+  if(profile?.role==='accountant')await loadFinanceTrainingOptions();
+}
+function refreshV72Position(id){
+  const type=el('pt_'+id).value;
+  el('pos_'+id).innerHTML=positionOptions(type,'Not Assigned');
+}
+async function saveV72Person(id,oldRole){
+  const newRole=el('r_'+id).value;
+  if(newRole==='accountant'&&oldRole!=='accountant'&&!confirm('Grant FINANCE access? This permits financial modifications and approvals.'))return;
+  if(oldRole==='accountant'&&newRole!=='accountant'&&!confirm('Remove FINANCE access?'))return;
+  if(newRole==='admin'&&oldRole!=='admin'&&!confirm('Grant TECHNICAL access? This permits operational management.'))return;
+  const res=await sb.rpc('admin_update_user_v72',{
+    p_user_id:id,p_full_name:el('n_'+id).value.trim(),p_phone:el('ph_'+id).value.trim(),
+    p_position:el('pos_'+id).value,p_role:newRole,p_active:el('act_'+id).checked,
+    p_fee_exempt:el('fee_'+id).checked,p_person_type:el('pt_'+id).value
+  });
+  if(res.error)return showMsg('globalMsg',res.error.message,'error');
+  showMsg('globalMsg','Profile updated.');
+  await loadAdmin();
+}
+
+async function saveAdminUser(id,oldRole){
+  const role=el('r_'+id).value;
+  const active=el('act_'+id).checked;
+  const fee=el('fee_'+id).checked;
+  const name=el('n_'+id).value.trim();
+  const phone=el('ph_'+id).value.trim();
+  const position=el('pos_'+id).value.trim();
+
+  if(!name)return showMsg('globalMsg','Full name cannot be empty.','error');
+
+  if(role!==oldRole && (role==='accountant' || oldRole==='accountant')){
+    const msg=role==='accountant'
+      ?'Grant FINANCE access? This user will be able to approve payments and modify financial records.'
+      :'Remove FINANCE access from this user?';
+    if(!confirm(msg)){el('r_'+id).value=oldRole;return}
+  }
+
+  if(role!==oldRole && role==='admin'){
+    if(!confirm('Grant TECHNICAL access? This user will be able to manage users, roles, trainings and attendance.')){
+      el('r_'+id).value=oldRole;return;
+    }
+  }
+
+  const{data,error}=await sb.rpc('admin_update_user',{
+    p_user_id:id,
+    p_full_name:name,
+    p_phone:phone||null,
+    p_position:position||null,
+    p_role:role,
+    p_active:active,
+    p_fee_exempt:fee
+  });
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'User updated.');
+  if(id===currentUser.id)await loadSession(true);
+  else await loadAdmin();
+}
+
+async function toggleAdminUserActive(id,newActive){
+  const action=newActive?'reactivate':'deactivate';
+  if(!confirm(`${action.charAt(0).toUpperCase()+action.slice(1)} this user?`))return;
+  const{data,error}=await sb.rpc('admin_set_user_active',{p_user_id:id,p_active:newActive});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'User status updated.');
+  await loadAdmin();
+}
+
+
+
+
+function renderStandardFinanceTrainingOptions(rows){
+  const target=el('financeTrainingOptions');
+  if(!target)return;
+
+  const defaults=[
+    {original_sessions:1,name:'Single Session',sessions:1,price_aed:60,description:'Pay per training session.',active:true},
+    {original_sessions:4,name:'Package 4',sessions:4,price_aed:210,description:'4 training sessions.',active:true},
+    {original_sessions:8,name:'Package 8',sessions:8,price_aed:410,description:'8 training sessions.',active:true}
+  ];
+
+  const source=Array.isArray(rows)?rows:[];
+  const options=defaults.map(d=>{
+    const found=source.find(x=>Number(x.sessions??x.session_count)===d.original_sessions);
+    return found ? {
+      ...d,
+      name:found.name??found.option_name??d.name,
+      sessions:Number(found.sessions??found.session_count??d.sessions),
+      price_aed:Number(found.price_aed??found.price??d.price_aed),
+      description:found.description??d.description,
+      active:found.active!==false
+    } : d;
+  });
+
+  target.innerHTML=options.map(o=>`
+    <div class="training">
+      <div class="financeOptionGrid">
+        <div><label class="small">Name</label><input id="std_n_${o.original_sessions}" value="${esc(o.name)}"></div>
+        <div><label class="small">Sessions</label><input id="std_s_${o.original_sessions}" type="number" min="1" value="${o.sessions}"></div>
+        <div><label class="small">Price AED</label><input id="std_p_${o.original_sessions}" type="number" min="0" step="0.01" value="${o.price_aed}"></div>
+      </div>
+      <div style="margin-top:8px"><label class="small">Description</label><input id="std_d_${o.original_sessions}" value="${esc(o.description||'')}"></div>
+      <label style="display:block;margin-top:8px"><input id="std_a_${o.original_sessions}" type="checkbox" ${o.active?'checked':''}> Active</label>
+      <div class="actions"><button onclick="saveStandardFinanceTrainingOption(${o.original_sessions})">Save</button></div>
+    </div>
+  `).join('');
+}
+
+async function loadFinanceTrainingOptions(){
+  if(profile?.role!=='accountant')return;
+  el('financeTrainingOptionsCard')?.classList.remove('hidden');
+
+  try{
+    const r=await sb.rpc('public_list_home_training_options');
+    if(r.error || !Array.isArray(r.data))return;
+
+    [1,4,8].forEach(s=>{
+      const o=r.data.find(x=>Number(x.sessions??x.session_count)===s);
+      if(!o)return;
+      if(el(`std_n_${s}`)) el(`std_n_${s}`).value=o.name??o.option_name??el(`std_n_${s}`).value;
+      if(el(`std_s_${s}`)) el(`std_s_${s}`).value=Number(o.sessions??o.session_count??s);
+      if(el(`std_p_${s}`)) el(`std_p_${s}`).value=Number(o.price_aed??o.price??0);
+      if(el(`std_d_${s}`)) el(`std_d_${s}`).value=o.description??'';
+      if(el(`std_a_${s}`)) el(`std_a_${s}`).checked=o.active!==false;
+    });
+  }catch(e){console.warn('Training Options hydration skipped',e)}
+}
+async function saveStandardFinanceTrainingOption(originalSessions){
+  const name=el(`std_n_${originalSessions}`).value.trim();
+  const sessions=Number(el(`std_s_${originalSessions}`).value||0);
+  const price=Number(el(`std_p_${originalSessions}`).value||0);
+  const description=el(`std_d_${originalSessions}`).value.trim();
+  const active=el(`std_a_${originalSessions}`).checked;
+
+  if(!name||sessions<1||price<0)return showMsg('globalMsg','Enter a valid name, sessions and price.','error');
+
+  const r=await sb.rpc('finance_save_standard_training_option',{
+    p_original_sessions:originalSessions,
+    p_name:name,
+    p_sessions:sessions,
+    p_price_aed:price,
+    p_description:description,
+    p_active:active
+  });
+  if(r.error)return showMsg('globalMsg',r.error.message,'error');
+
+  showMsg('globalMsg','Training option updated.');
+  await loadFinanceTrainingOptions();
+  await loadHomeTrainingOptions();
+}
+
+async function saveFinanceTrainingOption(id){
+  const res=await sb.rpc('finance_update_home_training_option',{p_id:id,p_name:el('hto_n_'+id).value.trim(),p_sessions:Number(el('hto_s_'+id).value||1),p_price_aed:Number(el('hto_p_'+id).value||0),p_description:el('hto_d_'+id).value.trim(),p_display_order:Number(el('hto_o_'+id).value||0),p_active:el('hto_a_'+id).checked});
+  if(res.error)return showMsg('globalMsg',res.error.message,'error');
+  showMsg('globalMsg','Training option updated.');await loadFinanceTrainingOptions();await loadHomeTrainingOptions();
+}
+async function removeFinanceTrainingOption(id,name){
+  if(!confirm(`Remove "${name}" from the Home page options?`))return;
+  const res=await sb.rpc('finance_remove_home_training_option',{p_id:id});
+  if(res.error)return showMsg('globalMsg',res.error.message,'error');
+  await loadFinanceTrainingOptions();await loadHomeTrainingOptions();
+}
+async function loadRemovedPlayers(){
+  if(!el('removedPlayers'))return;
+  const{data,error}=await sb.rpc('admin_list_removed_players');
+  if(error){
+    el('removedPlayers').innerHTML=`<div class="notice error">${esc(error.message)}</div>`;
+    return;
+  }
+  const rows=data||[];
+  el('removedPlayers').innerHTML=rows.length?rows.map(r=>`
+    <div class="removedRow">
+      <div>
+        <strong>${esc(r.player_name||'Player')}</strong>
+        <div class="muted">${esc(r.email||'')}${r.phone?' · '+esc(r.phone):''}</div>
+        <div class="small">${esc(r.removal_reason||'')}</div>
+      </div>
+      <div>
+        <span class="pill ${r.blocked?'due':'ok'}">${r.blocked?'BLOCKED':'READMITTED'}</span>
+        <div class="muted">${r.removed_at?new Date(r.removed_at).toLocaleString():''}</div>
+      </div>
+      <div>
+        ${r.report_id?`<button class="secondary" onclick="viewStoredRemovalReport('${r.report_id}')">View report</button>`:''}
+        ${r.blocked?`<button onclick="readmitPlayer('${r.registry_id}','${esc(r.player_name||'Player').replaceAll("'","&#39;")}')">Re-admit</button>`:''}
+      </div>
+    </div>`).join(''):'<div class="muted">No removed players.</div>';
+}
+
+
+
+
+let pendingRemoval=null;
+function openRemovalReasonModal(id,name,role){
+  if(role==='admin'||role==='accountant')return showMsg('globalMsg','Change this management account to PLAYER before removal.','error');
+  pendingRemoval={id,name};
+  el('removalReasonPlayerName').textContent=name+' · Removal';
+  el('removalReasonSelect').value='';el('removalReregStatus').value='review';el('removalReasonNote').value='';
+  el('removalReasonNoteWrap').classList.add('hidden');el('removalReasonOverlay').classList.remove('hidden');
+}
+function closeRemovalReasonModal(){el('removalReasonOverlay').classList.add('hidden');pendingRemoval=null}
+function toggleRemovalReasonNote(){
+  const r=el('removalReasonSelect').value;
+  el('removalReasonNoteWrap').classList.toggle('hidden',!['Other','Breach of Club Rules','Safety / Conduct Issue'].includes(r));
+}
+async function continuePlayerRemoval(){
+  if(!pendingRemoval)return;
+  const reason=el('removalReasonSelect').value,status=el('removalReregStatus').value,note=el('removalReasonNote').value.trim();
+  if(!reason)return showMsg('globalMsg','Select a standardized removal reason.','error');
+  if(['Other','Breach of Club Rules','Safety / Conduct Issue'].includes(reason)&&!note)return showMsg('globalMsg','An objective note is required for this reason.','error');
+  const res=await sb.rpc('admin_prepare_player_removal_v72',{p_user_id:pendingRemoval.id,p_reason:reason,p_reregistration_status:status,p_admin_note:note||null});
+  if(res.error)return showMsg('globalMsg',res.error.message,'error');
+  closeRemovalReasonModal();await openPreparedRemovalReport(res.data);
+}
+async function openPreparedRemovalReport(reportId){
+  const res=await sb.rpc('admin_get_removal_report',{p_report_id:reportId});
+  if(res.error)return showMsg('globalMsg',res.error.message,'error');
+  removalState=res.data;
+  renderRemovalModal();
+}
+
+async function viewStoredRemovalReport(reportId){
+  const res=await sb.rpc('admin_get_removal_report',{p_report_id:reportId});
+  if(res.error)return showMsg('globalMsg',res.error.message,'error');
+  removalState=res.data;
+  renderRemovalModal(true);
+}
+
+function removalReportData(){
+  const r=removalState||{};
+  const s=r.snapshot||{};
+  const a=s.attendance_summary||{};
+  const packages=s.package_purchases||[];
+  const requests=s.payment_requests||[];
+  const payments=s.payments||[];
+  const bonus=s.bonus_credits||[];
+
+  let packageCredits=0;
+  for(const p of packages){
+    const x=Number(p.credits_remaining ?? p.remaining_credits ?? 0);
+    if(Number.isFinite(x))packageCredits+=x;
+  }
+  const activeBonus=bonus.filter(b=>String(b.status||'').toLowerCase()==='available' || !b.used_at).length;
+
+  return{
+    r,s,a,packages,requests,payments,bonus,
+    packageCredits,activeBonus,
+    present:Number(a.present||0),
+    absent:Number(a.absent||0),
+    registered:Number(a.registered||0),
+    cancelled:Number(a.cancelled||0)
+  };
+}
+
+function renderRemovalModal(readOnly=false){
+  const d=removalReportData();
+  el('removalPlayerName').textContent=`${d.r.player_name||'Player'} · Final Summary`;
+  const finalized=!!d.r.finalized_at;
+
+  el('removalBody').innerHTML=`
+    <div class="notice ${finalized?'warn':'info'}">
+      ${finalized
+        ?`Removal finalized ${new Date(d.r.finalized_at).toLocaleString()}. This report remains archived.`
+        :'Review the summary, print/save it if required, then finalize removal. The player notification email is generated automatically.'}
+    </div>
+    <div><strong>Reason:</strong> ${esc(d.r.removal_reason||'—')}</div>
+    <div class="muted">${esc(d.r.player_email||'No email available')}${d.r.player_phone?' · '+esc(d.r.player_phone):''}</div>
+    <div class="removalSummary">
+      <div class="removalKpi">Present<b>${d.present}</b></div>
+      <div class="removalKpi">Absent<b>${d.absent}</b></div>
+      <div class="removalKpi">Registered<b>${d.registered}</b></div>
+      <div class="removalKpi">Cancelled<b>${d.cancelled}</b></div>
+    </div>
+    <div class="grid">
+      <div class="plan">
+        <strong>Packages / Credits</strong>
+        <div class="muted">${d.packages.length} package record(s)</div>
+        <div>Recorded remaining package credits: <strong>${d.packageCredits}</strong></div>
+        <div>Bonus credit records: <strong>${d.bonus.length}</strong></div>
+      </div>
+      <div class="plan">
+        <strong>Payments</strong>
+        <div>Payment records: <strong>${d.payments.length}</strong></div>
+        <div>Package payment requests: <strong>${d.requests.length}</strong></div>
+      </div>
+    </div>
+    <div class="small muted">Prepared: ${d.r.prepared_at?new Date(d.r.prepared_at).toLocaleString():'—'} · Report ID: ${esc(d.r.id||'')}</div>
+  `;
+
+  const emailBtn=el('removalEmailBtn');
+  const finalizeBtn=el('removalFinalizeBtn');
+  emailBtn.classList.toggle('hidden',finalized || !d.r.player_email);
+  finalizeBtn.classList.toggle('hidden',finalized || readOnly);
+  el('removalOverlay').classList.remove('hidden');
+}
+
+function closeRemovalModal(){
+  el('removalOverlay').classList.add('hidden');
+  removalState=null;
+}
+
+function removalReportHtml(){
+  const d=removalReportData();
+  const tr=(d.s.training_history||[]).map(x=>`<tr>
+    <td>${esc(x.starts_at?new Date(x.starts_at).toLocaleDateString():'')}</td>
+    <td>${esc(x.training_title||'Training')}</td>
+    <td>${esc(String(x.attendance||'').toUpperCase())}</td>
+    <td>${esc(String(x.payment_status||'').replaceAll('_',' ').toUpperCase())}</td>
+  </tr>`).join('')||'<tr><td colspan="4">No training history.</td></tr>';
+
+  const pay=d.payments.map(x=>`<tr>
+    <td>${esc(String(x.payment_date||x.created_at||'').slice(0,10))}</td>
+    <td>${esc(x.payment_type||x.type||'Payment')}</td>
+    <td>${money(x.amount_aed||x.amount||0)}</td>
+  </tr>`).join('')||'<tr><td colspan="3">No payment records.</td></tr>';
+
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Player Final Summary</title>
+  <style>body{font-family:Arial;color:#0A1B3D;margin:32px}table{width:100%;border-collapse:collapse;margin:14px 0}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}.k{display:inline-block;border:1px solid #ddd;border-radius:9px;padding:10px;margin:5px}</style>
+  </head><body>
+  <h1>HANDBALL CLUB DUBAI</h1>
+  <h2>Player Final Summary</h2>
+  <p><b>${esc(d.r.player_name||'Player')}</b><br>${esc(d.r.player_email||'')}${d.r.player_phone?' · '+esc(d.r.player_phone):''}</p>
+  <p><b>Removal reason:</b> ${esc(d.r.removal_reason||'—')}</p>
+  <div class="k">Present<br><b>${d.present}</b></div>
+  <div class="k">Absent<br><b>${d.absent}</b></div>
+  <div class="k">Registered<br><b>${d.registered}</b></div>
+  <div class="k">Cancelled<br><b>${d.cancelled}</b></div>
+  <h3>Training history</h3><table><tr><th>Date</th><th>Training</th><th>Attendance</th><th>Payment</th></tr>${tr}</table>
+  <h3>Payments</h3><table><tr><th>Date</th><th>Type</th><th>Amount</th></tr>${pay}</table>
+  <p>Package records: ${d.packages.length} · Recorded remaining package credits: ${d.packageCredits} · Bonus records: ${d.bonus.length}</p>
+  <p style="font-size:12px">Prepared ${esc(d.r.prepared_at?new Date(d.r.prepared_at).toLocaleString():'')} · Report ID ${esc(d.r.id||'')}</p>
+  <p>HC DUBAI INFO · WhatsApp: +971 58 558 8323</p>
+  </body></html>`;
+}
+
+function printRemovalReport(){
+  if(!removalState)return;
+  const w=window.open('','_blank');
+  if(!w)return showMsg('globalMsg','Allow pop-ups to print/save the report.','error');
+  w.document.write(removalReportHtml());
+  w.document.close();
+  setTimeout(()=>w.print(),300);
+}
+
+function openRemovalEmail(){
+  if(!removalState)return;
+  const d=removalReportData();
+  if(!d.r.player_email)return showMsg('globalMsg','No player email is available. Add an email before removal or contact the player manually.','error');
+
+  const subject='Handball Club Dubai – Account Removal Notification';
+  const body=`Dear ${d.r.player_name||'Player'},
+
+This email confirms that your Handball Club Dubai player account has been removed from the active club management application.
+
+Reason: ${d.r.removal_reason||'Administrative removal'}
+
+A final administrative summary of your attendance and payment records has been prepared and retained by the Club.
+
+If you believe this requires review, or if you wish to request future readmission, please contact HC DUBAI INFO on WhatsApp +971 58 558 8323.
+
+Kind regards,
+Handball Club Dubai`;
+
+  window.location.href=`mailto:${encodeURIComponent(d.r.player_email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+async function finalizePlayerRemoval(){
+  if(!removalState)return;
+  if(!removalState.player_email){
+    return showMsg('globalMsg','A removal email address is required before final removal.','error');
+  }
+  if(!confirm('Final confirmation: notify the player by email, remove the player from the active app and activate the re-registration control?'))return;
+
+  const mail=await sb.rpc('queue_removal_email_v820',{
+    p_recipient_email:removalState.player_email,
+    p_player_name:removalState.player_name||'Player',
+    p_reason:removalState.removal_reason||'Administrative removal',
+    p_report_id:removalState.id
+  });
+  if(mail.error)return showMsg('globalMsg','Removal stopped because the notification email could not be queued: '+mail.error.message,'error');
+
+  await triggerClubEmailDelivery();
+
+  const res=await sb.rpc('admin_finalize_player_removal',{p_report_id:removalState.id,p_email_sent:true});
+  if(res.error)return showMsg('globalMsg',res.error.message,'error');
+
+  closeRemovalModal();
+  showMsg('globalMsg',res.data||'Player removed. Notification queued and final report archived.');
+  await loadAdmin();
+}
+
+async function readmitPlayer(registryId,name){
+  const notes=prompt(`Re-admit "${name}"?\n\nOptional TECHNICAL note:`);
+  if(notes===null)return;
+  if(!confirm('Confirm readmission? The registration block will be removed and the previous player profile will be reactivated where available.'))return;
+
+  const res=await sb.rpc('admin_readmit_removed_player',{p_registry_id:registryId,p_notes:notes||null});
+  if(res.error)return showMsg('globalMsg',res.error.message,'error');
+  showMsg('globalMsg',res.data||'Player readmitted.');
+  await loadAdmin();
+}
+
+async function editTraining(id){
+  const t=adminTrainings.find(x=>x.id===id);
+  if(!t)return;
+  const title=prompt('Training title:',t.title||'Training'); if(title===null)return;
+  const dt=new Date(t.starts_at);
+  const currentDate=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+  const currentTime=`${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+  const date=prompt('Date (YYYY-MM-DD):',currentDate); if(date===null)return;
+  const time=prompt('Time (HH:MM):',currentTime); if(time===null)return;
+  const location=prompt('Location:',t.location||''); if(location===null)return;
+  const mapUrl=prompt('Google Maps link:',t.map_url||''); if(mapUrl===null)return;
+  const notes=prompt('Notes:',t.notes||''); if(notes===null)return;
+  if(mapUrl && !/^https?:\/\//i.test(mapUrl))return showMsg('globalMsg','Google Maps link must start with http:// or https://','error');
+
+  const startsAt=new Date(`${date}T${time}`);
+  if(Number.isNaN(startsAt.getTime()))return showMsg('globalMsg','Invalid date or time.','error');
+
+  const{data,error}=await sb.rpc('admin_update_training',{
+    p_training_id:id,
+    p_title:title,
+    p_starts_at:startsAt.toISOString(),
+    p_location:location||null,
+    p_map_url:mapUrl||null,
+    p_notes:notes||null
+  });
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Training updated.');
+  await loadAdmin();
+}
+
+async function toggleRegistration(id,newOpen){
+  const{data,error}=await sb.rpc('admin_set_registration_open',{p_training_id:id,p_open:newOpen});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Registration status updated.');
+  await loadAdmin();
+}
+
+async function openRoster(trainingId){
+  const t=adminTrainings.find(x=>x.id===trainingId);
+  if(!t)return;
+
+  el('rosterCard').classList.remove('hidden');
+  el('rosterTitle').textContent=t.title||'Training';
+  el('rosterMeta').innerHTML=`${esc(new Date(t.starts_at).toLocaleString())}${t.location?' · '+esc(t.location):''}${t.map_url?` · <a href="${esc(t.map_url)}" target="_blank" rel="noopener">📍 Google Maps</a>`:''}`;
+
+  const{data,error}=await sb.from('training_registrations')
+    .select('id,player_id,attendance,payment_status,payment_source,late_cancellation,charge_waived,profiles!training_registrations_player_id_fkey(full_name,phone,position,membership_type)')
+    .eq('training_id',trainingId)
+    .order('registered_at');
+
+  if(error){
+    el('roster').innerHTML=`<div class="notice error">${esc(error.message)}</div>`;
+    return;
+  }
+
+  const rows=data||[];
+  el('roster').innerHTML=rows.length?`<table>
+    <tr><th>Player</th><th>Position</th><th>Payment</th><th>Attendance</th><th>Action</th></tr>
+    ${rows.map(r=>{
+      const cancelled=r.attendance==='cancelled';
+      const payment=r.payment_source==='bonus'?'BONUS':String(r.payment_status||'').replaceAll('_',' ').toUpperCase();
+      return `<tr>
+        <td><strong>${esc(r.profiles?.full_name||'Player')}</strong><br><span class="muted">${esc(r.profiles?.phone||'')}</span></td>
+        <td>${esc(r.profiles?.position||'—')}</td>
+        <td>${esc(payment)}${r.late_cancellation?' · LATE CANCELLATION':''}${r.charge_waived?' · WAIVED':''}</td>
+        <td>${cancelled?'<span class="pill due">CANCELLED</span>':`<select id="att_${r.id}">
+          <option value="registered" ${r.attendance==='registered'?'selected':''}>Registered</option>
+          <option value="present" ${r.attendance==='present'?'selected':''}>Present</option>
+          <option value="absent" ${r.attendance==='absent'?'selected':''}>Absent</option>
+        </select>`}</td>
+        <td>${cancelled?'—':`<button onclick="saveAttendance('${r.id}','${trainingId}')">Save attendance</button>`}</td>
+      </tr>`;
+    }).join('')}
+  </table>`:'<div class="muted">No players registered for this training.</div>';
+
+  el('rosterCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function saveAttendance(regId,trainingId){
+  const status=el('att_'+regId).value;
+  const{data,error}=await sb.rpc('admin_set_attendance',{p_registration_id:regId,p_attendance:status});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Attendance updated.');
+  await openRoster(trainingId);
+  await loadAdmin();
+}
+
+function closeRoster(){
+  el('rosterCard').classList.add('hidden');
+  el('roster').innerHTML='';
+}
+
+
+
+let seasonBudgetRows=[];let seasonBudgetExpenseRows=[];let seasonFinanceChartObj=null;
+
+function seasonStartFromDate(d=new Date()){
+  const y=d.getFullYear(),m=d.getMonth()+1;
+  return m>=9?y:y-1;
+}
+function initBudgetSeasonSelector(){
+  const sel=el('budgetSeasonStart'); if(!sel)return;
+  const current=seasonStartFromDate();
+  const years=[];
+  for(let y=current-2;y<=current+2;y++)years.push(y);
+  sel.innerHTML=years.map(y=>`<option value="${y}">${y}/${y+1}</option>`).join('');
+  sel.value=String(current);
+}
+function seasonMonthIndex(dateValue,startYear){
+  if(!dateValue)return -1;
+  const d=new Date(String(dateValue).slice(0,10)+'T00:00:00');
+  if(isNaN(d))return -1;
+  const y=d.getFullYear(),m=d.getMonth()+1;
+  if(y===startYear && m>=9 && m<=12)return m-9;
+  if(y===startYear+1 && m>=1 && m<=6)return m+3;
+  return -1;
+}
+async function loadSeasonBudget(){
+  const startYear=Number(el('budgetSeasonStart')?.value||seasonStartFromDate());
+  const [incRes,expRes]=await Promise.all([
+    sb.rpc('finance_get_season_budget_v771',{p_start_year:startYear}),
+    sb.rpc('finance_get_expense_budget_v771',{p_start_year:startYear})
+  ]);
+  seasonBudgetRows=!incRes.error?(incRes.data||[]):[];
+  seasonBudgetExpenseRows=!expRes.error?(expRes.data||[]):[];
+
+  if(profile?.role==='accountant' && (!seasonBudgetRows.length || !seasonBudgetExpenseRows.length)){
+    const c=await sb.rpc('finance_get_or_create_season_budget_v771',{p_start_year:startYear});
+    if(!c.error){
+      const [inc2,exp2]=await Promise.all([
+        sb.rpc('finance_get_season_budget_v771',{p_start_year:startYear}),
+        sb.rpc('finance_get_expense_budget_v771',{p_start_year:startYear})
+      ]);
+      if(!inc2.error)seasonBudgetRows=inc2.data||[];
+      if(!exp2.error)seasonBudgetExpenseRows=exp2.data||[];
+    }
+  }
+  renderBudgetEditor();
+  renderFinancePeriodData();
+}
+
+function renderBudgetEditor(){
+  const incomeBox=el('budgetIncomeEditor'), expenseBox=el('budgetExpenseEditor');
+  if(!incomeBox||!expenseBox)return;
+  const months=['September','October','November','December','January','February','March','April','May','June'];
+  const categories=[
+    'Venue / Court Rental','Equipment','Referee / Officials','Tournament / Competition Fees',
+    'Marketing & Social Media','Uniforms / Apparel','Medical / First Aid','Transportation',
+    'Food & Refreshments','Administration','Banking / Fees','Coaching / Technical'
+  ];
+
+  incomeBox.innerHTML=`<table><tr><th>Month</th><th>Budget Income</th><th></th></tr>${
+    months.map((label,i)=>{
+      const r=seasonBudgetRows.find(x=>Number(x.month_no)===i+1)||{};
+      const v=Number(r.budget_income||0);
+      return profile?.role==='accountant'
+        ? `<tr><td>${label}</td><td><input class="budgetInput" id="bi_${i+1}" type="number" min="0" step="0.01" value="${v}"></td><td><button onclick="saveMonthIncomeBudget(${i+1})">Save</button></td></tr>`
+        : `<tr><td>${label}</td><td>${money(v)}</td><td>Read only</td></tr>`;
+    }).join('')
+  }</table>`;
+
+  const header=months.map(m=>`<th>${m.slice(0,3)}</th>`).join('');
+  const rows=categories.map((cat,ci)=>{
+    const cells=months.map((m,mi)=>{
+      const r=seasonBudgetExpenseRows.find(x=>x.category===cat && Number(x.month_no)===mi+1)||{};
+      const v=Number(r.budget_expenses||0);
+      return profile?.role==='accountant'
+        ? `<td><input class="budgetInput" id="be_${ci}_${mi+1}" type="number" min="0" step="0.01" value="${v}"></td>`
+        : `<td>${money(v)}</td>`;
+    }).join('');
+    return `<tr><td><strong>${esc(cat)}</strong></td>${cells}<td>${profile?.role==='accountant'?`<button onclick="saveExpenseBudgetCategory(${ci})">Save</button>`:'Read only'}</td></tr>`;
+  }).join('');
+  expenseBox.innerHTML=`<table><tr><th>Category</th>${header}<th></th></tr>${rows}</table>`;
+  el('budgetReadOnlyNote').textContent=profile?.role==='accountant'
+    ? 'Budget values can be revised during the season. The graph updates after saving.'
+    : 'TECHNICAL can review the budget. Only FINANCE can modify it.';
+}
+
+async function saveMonthIncomeBudget(monthNo){
+  if(profile?.role!=='accountant')return showMsg('globalMsg','FINANCE access required.','error');
+  const startYear=Number(el('budgetSeasonStart').value);
+  const r=await sb.rpc('finance_save_month_income_budget_v771',{
+    p_start_year:startYear,p_month_no:monthNo,p_budget_income:Number(el('bi_'+monthNo).value||0)
+  });
+  if(r.error)return showMsg('globalMsg',r.error.message,'error');
+  showMsg('globalMsg','Monthly income budget saved.');
+  await loadSeasonBudget();
+}
+
+async function saveExpenseBudgetCategory(categoryIndex){
+  if(profile?.role!=='accountant')return showMsg('globalMsg','FINANCE access required.','error');
+  const startYear=Number(el('budgetSeasonStart').value);
+  const categories=[
+    'Venue / Court Rental','Equipment','Referee / Officials','Tournament / Competition Fees',
+    'Marketing & Social Media','Uniforms / Apparel','Medical / First Aid','Transportation',
+    'Food & Refreshments','Administration','Banking / Fees','Coaching / Technical'
+  ];
+  const category=categories[categoryIndex];
+  for(let monthNo=1;monthNo<=10;monthNo++){
+    const r=await sb.rpc('finance_save_expense_budget_v771',{
+      p_start_year:startYear,p_month_no:monthNo,p_category:category,
+      p_budget_expenses:Number(el(`be_${categoryIndex}_${monthNo}`).value||0)
+    });
+    if(r.error)return showMsg('globalMsg',r.error.message,'error');
+  }
+  showMsg('globalMsg',`${category} budget saved.`);
+  await loadSeasonBudget();
+}
+function seasonActuals(startYear){
+  const income=Array(10).fill(0),expenses=Array(10).fill(0);
+  (financePayments||[]).forEach(x=>{const i=seasonMonthIndex(x.payment_date,startYear);if(i>=0)income[i]+=Number(x.amount_aed||0)});
+  (financeExpenses||[]).forEach(x=>{const i=seasonMonthIndex(x.expense_date,startYear);if(i>=0)expenses[i]+=Number(x.amount_aed||0)});
+  return{income,expenses};
+}
+function cumulative(arr){
+  let s=0;return arr.map(v=>(s+=Number(v||0)));
+}
+function renderSeasonFinanceChart(){
+  const canvas=el('seasonFinanceChart'); if(!canvas || typeof Chart==='undefined')return;
+  const startYear=Number(el('budgetSeasonStart')?.value||seasonStartFromDate());
+  const labels=['Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr','May','Jun'];
+  const budgetIncome=Array(10).fill(0),budgetExpenses=Array(10).fill(0);
+  seasonBudgetRows.forEach(r=>{
+    const i=Number(r.month_no)-1;
+    if(i>=0&&i<10)budgetIncome[i]=Number(r.budget_income||0);
+  });
+  seasonBudgetExpenseRows.forEach(r=>{
+    const i=Number(r.month_no)-1;
+    if(i>=0&&i<10)budgetExpenses[i]+=Number(r.budget_expenses||0);
+  });
+  const actual=seasonActuals(startYear);
+  const datasets=[
+    {label:'Budget Income',data:cumulative(budgetIncome),borderDash:[6,4],tension:.25},
+    {label:'Actual Income',data:cumulative(actual.income),tension:.25},
+    {label:'Budget Expenses',data:cumulative(budgetExpenses),borderDash:[6,4],tension:.25},
+    {label:'Actual Expenses',data:cumulative(actual.expenses),tension:.25}
+  ];
+  const hasData=datasets.some(ds=>ds.data.some(v=>Number(v)>0));
+  el('seasonChartEmpty')?.classList.toggle('hidden',hasData);
+  if(seasonFinanceChartObj){seasonFinanceChartObj.destroy();seasonFinanceChartObj=null}
+  if(!hasData)return;
+  seasonFinanceChartObj=new Chart(canvas,{type:'line',data:{labels,datasets},options:{
+    responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true}}
+  }});
+}
+
+function financeDateRange(){
+  return {
+    from: el('reportFrom')?.value || '1900-01-01',
+    to: el('reportTo')?.value || '2999-12-31'
+  };
+}
+function inFinanceRange(value){
+  if(!value)return false;
+  const d=String(value).slice(0,10);
+  const r=financeDateRange();
+  return d>=r.from && d<=r.to;
+}
+function financeSnapshot(){
+  const payments=(financePayments||[]).filter(x=>inFinanceRange(x.payment_date));
+  const expenses=(financeExpenses||[]).filter(x=>inFinanceRange(x.expense_date));
+  const pending=(financePending||[]).filter(x=>inFinanceRange(x.requested_at));
+  const dues=(financeSingleDues||[]).filter(x=>inFinanceRange(x.trainings?.starts_at));
+  const income=payments.reduce((s,x)=>s+Number(x.amount_aed||0),0);
+  const expense=expenses.reduce((s,x)=>s+Number(x.amount_aed||0),0);
+  return {payments,expenses,pending,dues,income,expense,balance:income-expense};
+}
+function renderFinancePeriodData(){
+  const f=financeSnapshot();
+  const startYear=Number(el('budgetSeasonStart')?.value||seasonStartFromDate());
+  const bIncome=seasonBudgetRows.reduce((s,x)=>s+Number(x.budget_income||0),0);
+  const bExpense=seasonBudgetExpenseRows.reduce((s,x)=>s+Number(x.budget_expenses||0),0);
+  el('budgetIncomeKpi').textContent=money(bIncome);
+  el('budgetExpenseKpi').textContent=money(bExpense);
+  el('expectedBalanceKpi').textContent=money(bIncome-bExpense);
+
+  el('income').textContent=money(f.income);
+  el('expTotal').textContent=money(f.expense);
+  el('balance').textContent=money(f.balance);
+  el('pendingCount').textContent=f.pending.length+f.dues.length;
+
+  el('paymentHistory').innerHTML=f.payments.length
+    ? `<table>
+        <tr><th>Date</th><th>Player</th><th>Type</th><th>Amount</th><th>Method</th></tr>
+        ${f.payments.map(x=>`<tr>
+          <td>${esc((x.payment_date||x.created_at||'').slice(0,10))}</td>
+          <td>${esc(x.player_name||x.profiles?.full_name||'—')}</td>
+          <td>${esc(x.payment_type||x.type||'Payment')}</td>
+          <td>${money(x.amount_aed)}</td>
+          <td>${esc(x.payment_method||'—')}</td>
+        </tr>`).join('')}
+      </table>`
+    : '<div class="muted">No payments in the selected period.</div>';
+
+  el('expenseHistory').innerHTML=f.expenses.length
+    ? `<table>
+        <tr><th>Date</th><th>Category</th><th>Amount</th><th>Description</th><th>Actions</th></tr>
+        ${f.expenses.map(x=>`<tr>
+          <td>${esc(x.expense_date||'')}</td>
+          <td>${esc(x.category||'—')}</td>
+          <td>${money(x.amount_aed)}</td>
+          <td>${esc(x.description||'—')}</td>
+          <td>
+            ${profile?.role==='accountant'
+              ? `<button class="secondary" onclick="editExpense('${x.id}')">Edit</button>
+                 <button class="danger" onclick="deleteExpense('${x.id}')">Delete</button>`
+              : '—'}
+          </td>
+        </tr>`).join('')}
+      </table>`
+    : '<div class="muted">No expenses in the selected period.</div>';
+
+  renderFinanceCharts();
+  renderSeasonFinanceChart();
+}
+function applyFinancePeriod(){
+  renderFinancePeriodData();
+  showMsg('globalMsg','Financial period applied.');
+}
+function setFinanceAllTime(){
+  el('reportFrom').value='2000-01-01';
+  el('reportTo').value='2099-12-31';
+  renderFinancePeriodData();
+}
+
+function paymentAgeInfo(dateValue){
+  if(!dateValue)return{days:0,label:'PENDING',cls:'age-pending',priority:0};
+  const d=new Date(dateValue),now=new Date();
+  d.setHours(0,0,0,0);now.setHours(0,0,0,0);
+  const days=Math.max(0,Math.floor((now-d)/86400000));
+  if(days>30)return{days,label:'CRITICAL',cls:'age-critical',priority:3};
+  if(days>=15)return{days,label:'HIGHLY OVERDUE',cls:'age-high',priority:2};
+  if(days>=8)return{days,label:'OVERDUE',cls:'age-overdue',priority:1};
+  return{days,label:'PENDING',cls:'age-pending',priority:0};
+}
+function ageBadge(dateValue){
+  const a=paymentAgeInfo(dateValue);
+  return `<span class="ageBadge ${a.cls}">${a.label} · ${a.days}d</span>`;
+}
+function monthKey(v){
+  const d=new Date(v); if(isNaN(d))return null;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function renderFinanceCharts(){
+  const snap=financeSnapshot();
+  const counts={PENDING:0,OVERDUE:0,'HIGHLY OVERDUE':0,CRITICAL:0};
+  snap.pending.forEach(x=>counts[paymentAgeInfo(x.requested_at).label]++);
+  snap.dues.forEach(x=>counts[paymentAgeInfo(x.trainings?.starts_at).label]++);
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
+  if(el('ageingTotalPill'))el('ageingTotalPill').textContent=total;
+  el('ageingEmpty')?.classList.toggle('hidden',total>0);
+  if(total){
+    const maxAge=Math.max(...Object.values(counts),1);
+    el('ageingNative').innerHTML=Object.entries(counts).map(([label,value])=>`<div class="ageCol"><div class="ageValue">${value}</div><div class="ageBar" style="height:${Math.max(3,(value/maxAge)*85)}px"></div><div class="ageLabel">${label}</div></div>`).join('');
+  }else el('ageingNative').innerHTML='';
+}
+async function loadExpenseMenus(){
+  if(profile?.role!=='accountant')return;
+  const cat=el('expCategory');
+  const existingCats=[...cat.options].map(o=>o.value);
+  try{
+    const c=await sb.rpc('finance_list_expense_categories');
+    if(!c.error && Array.isArray(c.data)){
+      const other=[...cat.options].find(o=>o.value==='__new__');
+      c.data.forEach(x=>{
+        if(x?.name && !existingCats.includes(x.name)){
+          const opt=document.createElement('option');
+          opt.value=x.name; opt.textContent=x.name;
+          cat.insertBefore(opt,other);
+        }
+      });
+    }
+  }catch(e){console.warn('Custom expense categories skipped',e)}
+}
+function toggleExpenseOther(kind){
+  if(kind!=='category')return;
+  const isNew=el('expCategory').value==='__new__';
+  el('expCategoryOther')?.classList.toggle('expenseOther',!isNew);
+}
+
+function syncTechnicalAlerts(){
+  const src=el('managementAlerts'),dst=el('technicalAlerts');
+  const srcCount=el('managementAlertCount'),dstCount=el('technicalAlertCount');
+  if(dst&&src)dst.innerHTML=src.innerHTML;
+  if(dstCount&&srcCount)dstCount.textContent=srcCount.textContent;
+}
+async function loadManagementAlertsBase(){
+  const r=await sb.rpc('refresh_financial_management_alerts');
+  if(r.error){el('managementAlerts').innerHTML='<div class="muted">Run the V7.3 database update to activate Management Alerts.</div>';return}
+  const q=await sb.from('management_alerts').select('*,profiles!management_alerts_player_id_fkey(full_name)').eq('status','open').order('created_at',{ascending:false}).limit(50);
+  if(q.error)return;
+  const rows=(q.data||[]).filter(a=>a.audience==='management'||(profile.role==='admin'&&a.audience==='technical')||(profile.role==='accountant'&&a.audience==='finance'));
+  el('managementAlertCount').textContent=rows.length;
+  el('managementAlerts').innerHTML=rows.length?rows.map(a=>`<div class="alertRow"><div class="alertTop"><strong>${esc(a.title)}</strong><span class="ageBadge ${a.priority==='CRITICAL'?'age-critical':'age-high'}">${esc(a.priority)}</span></div><div>${esc(a.profiles?.full_name||'Player')}</div><div class="muted">${esc(a.message)}</div><button class="secondary" onclick="resolveManagementAlert('${a.id}')">Mark Resolved</button></div>`).join(''):'<div class="muted">No open management alerts.</div>';
+}
+
+async function loadManagementAlerts(){
+  const box=el('managementAlerts');
+  const countEl=el('managementAlertCount');
+  if(!box)return;
+
+  let cards=[];
+
+  // Existing database management alerts
+  try{
+    const {data:dbAlerts}=await sb.from('management_alerts').select('*').eq('status','open').order('created_at',{ascending:false});
+    const filtered=(dbAlerts||[]).filter(a=>
+      a.audience==='management' ||
+      (profile?.role==='admin' && a.audience==='technical') ||
+      (profile?.role==='accountant' && a.audience==='finance')
+    );
+    filtered.forEach(a=>{
+      cards.push(`<div class="training"><strong>${esc(a.title||'Action Required')}</strong><br><span class="muted">${esc(a.message||'')}</span>${a.action_target?`<br><button onclick="goToManagementAction('${esc(a.action_target)}')">GO TO ACTION →</button>`:''}</div>`);
+    });
+  }catch(e){console.error(e)}
+
+  // TECHNICAL approval inbox: every new participant requires explicit approval.
+  if(profile?.role==='admin'){
+    const {data:pendingPlayers,error:pendingErr}=await sb.rpc('technical_list_pending_participants_v830');
+    if(!pendingErr){
+      (pendingPlayers||[]).forEach(p=>{
+        cards.push(`<div class="training"><span class="pill due">NEW PARTICIPANT APPROVAL REQUIRED</span><br><strong>${esc(p.full_name||'New participant')}</strong><br><span class="muted">${esc(p.email||'No email')} · ${esc(p.phone||'No WhatsApp')}</span><br><button onclick="decideParticipantApproval('${p.id}','approved')">APPROVE</button><button class="secondary" onclick="decideParticipantApproval('${p.id}','rejected')">REJECT</button></div>`);
+      });
+    }
+  }
+
+  // FINANCE notification inbox: every player-declared pending payment is actionable.
+  if(profile?.role==='accountant'){
+    const {data:payRows,error:payErr}=await sb.rpc('finance_list_pending_verifications_v810');
+    if(!payErr){
+      (payRows||[]).forEach(r=>{
+        cards.push(`<div class="training"><span class="pill due">PAYMENT VERIFICATION REQUIRED</span><br><strong>${esc(r.player_name||'Player')} · ${esc(r.plan_code==='PACKAGE4'?'Package 4':'Package 8')} · ${money(r.amount_aed||0)}</strong><br><span class="muted">Player declared payment. FINANCE verification pending.</span><br><button onclick="goToManagementAction('pendingPackagePaymentsSection')">GO TO PAYMENT APPROVAL →</button></div>`);
+      });
+    }
+  }
+
+  box.innerHTML=cards.length?cards.join(''):'<div class="muted">No open management alerts.</div>';
+  if(countEl)countEl.textContent=String(cards.length);
+
+  // TECHNICAL top notification box mirrors TECHNICAL-relevant actions only.
+  if(profile?.role==='admin' && el('technicalActionRequired')){
+    el('technicalActionRequired').innerHTML=box.innerHTML;
+  }
+}
+
+async function decideParticipantApproval(playerId,decision){
+  const isReject=decision==='rejected';
+  if(!confirm(isReject?'Reject this new participant registration? The account will remain inactive.':'Approve this participant and activate the account?'))return;
+  let note=null;
+  if(isReject) note=prompt('Optional TECHNICAL note / reason:','')||null;
+  const {data,error}=await sb.rpc('technical_decide_participant_v830',{p_player_id:playerId,p_decision:decision,p_note:note});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Participant approval updated.',isReject?'warn':'success');
+  await loadAdmin();
+}
+
+async function resolveManagementAlert(id){
+  const r=await sb.rpc('resolve_management_alert',{p_alert_id:id});
+  if(r.error)return showMsg('globalMsg',r.error.message,'error');
+  showMsg('globalMsg','Management alert resolved.');
+  await loadManagementAlerts();
+}
+
+async function loadEmailDeliveryStatus(){
+  const box=el('emailDeliveryStatus'); if(!box)return;
+  const {data,error}=await sb.rpc('finance_email_outbox_summary_v820');
+  if(error){box.textContent='Email status unavailable: '+error.message;return;}
+  const x=data||{};
+  box.innerHTML=`Queued: <strong>${Number(x.queued||0)}</strong> · Sent: <strong>${Number(x.sent||0)}</strong> · Errors: <strong>${Number(x.error||0)}</strong>`;
+}
+
+async function loadFinance(){
+  const pr=await sb.from('payment_requests').select('*,profiles!payment_requests_player_id_fkey(full_name)').eq('status','pending').order('requested_at');
+  financePending=pr.data||[];
+
+  const pay=await sb.rpc('finance_list_payments_v810');
+  financePayments=pay.error?[]:(pay.data||[]);
+  if(pay.error)showMsg('globalMsg','Finance payments could not be loaded: '+pay.error.message,'error');
+  const ex=await sb.from('expenses').select('*').order('expense_date',{ascending:false}).limit(500);financeExpenses=ex.data||[];
+
+  el('financeMode').className='notice '+(profile.role==='accountant'?'success':'warn');
+  el('financeMode').textContent=profile.role==='accountant'?'FINANCE: You can approve payments, record expenses and generate reports.':'MANAGEMENT: Financial information and reports are read-only. Only the Finance can approve or modify financial data.';
+
+  const dueQ=await sb.from('training_registrations').select('id,player_id,attendance,late_cancellation,charge_waived,profiles!training_registrations_player_id_fkey(full_name),trainings(title,starts_at)').eq('payment_status','due').eq('charge_waived',false).order('registered_at');
+  financeSingleDues=dueQ.data||[];
+  if(dueQ.error)showMsg('globalMsg',dueQ.error.message,'error');
+
+  initReportDates();
+  if(el('budgetSeasonStart') && !el('budgetSeasonStart').options.length)initBudgetSeasonSelector();
+  await loadSeasonBudget();
+  await loadManagementAlerts();
+
+  if(profile.role==='accountant'){
+    try{await loadFinanceTrainingOptions()}catch(e){console.error(e)}
+    el('pendingPackages').innerHTML=financePending.length?financePending.map(r=>`<div class="training" id="pending-${r.id}"><strong>${esc(r.profiles?.full_name||'Player')} · ${esc(r.plan_code==='PACKAGE4'?'Package 4':'Package 8')}</strong>${ageBadge(r.requested_at)}<br><span class="muted">${new Date(r.requested_at).toLocaleString()} · ${money(r.amount_aed||0)}</span><br>${r.payment_declared_at?`<span class="pill due">PAYMENT VERIFICATION REQUIRED</span><br><span class="small">Player declared payment on ${new Date(r.payment_declared_at).toLocaleString()}.</span><div class="grid" style="margin-top:10px"><div><label class="small">Payment Method</label><select id="verifyMethod-${r.id}"><option value="CAREEM LINK">CAREEM LINK</option><option value="CASH">CASH</option><option value="BANK TRANSFER">BANK TRANSFER</option></select></div><div><label class="small">Payment Date</label><input id="verifyDate-${r.id}" type="date" value="${new Date().toISOString().slice(0,10)}"></div></div><button onclick="confirmDeclaredPackagePayment('${r.id}')">CONFIRM RECEIVED PAYMENT</button><button class="secondary" onclick="rejectDeclaredPackagePayment('${r.id}')">PAYMENT NOT FOUND</button>`:`<span class="pill">AWAITING PLAYER PAYMENT</span>`}</div>`).join(''):'<div class="muted">No pending package payments.</div>';
+    el('singleFees').innerHTML=financeSingleDues.length?financeSingleDues.map(r=>`<div class="training"><strong>${esc(r.profiles?.full_name||'Player')}</strong>${ageBadge(r.trainings?.starts_at)}${r.attendance==='cancelled'&&r.late_cancellation?' <span class="pill due">LATE CANCELLATION</span>':''}<br><span class="muted">${esc(r.trainings?.title||'Training')}${r.trainings?.starts_at?' · '+new Date(r.trainings.starts_at).toLocaleString():''}</span><br><button onclick="paySingle('${r.id}')">Confirm Single Fee</button></div>`).join(''):'<div class="muted">No outstanding Single Fees.</div>';
+    try{await loadExpenseMenus()}catch(e){console.error(e)}
+    try{await loadManualPaymentPlayers()}catch(e){console.error(e)}
+    if(el('manualPayDate')&&!el('manualPayDate').value)el('manualPayDate').value=new Date().toISOString().slice(0,10);
+  }
+  renderFinancePeriodData();
+
+  try{await loadEmailDeliveryStatus()}catch(e){console.error(e)}
+}
+
+
+async function editExpense(id){
+  if(profile?.role!=='accountant')return showMsg('globalMsg','FINANCE access required.','error');
+  const x=(financeExpenses||[]).find(e=>String(e.id)===String(id));
+  if(!x)return showMsg('globalMsg','Expense not found.','error');
+
+  const newDate=prompt('Expense date (YYYY-MM-DD):',x.expense_date||'');
+  if(newDate===null)return;
+  const newCategory=prompt('Category:',x.category||'');
+  if(newCategory===null)return;
+  const newAmount=prompt('Amount AED:',Number(x.amount_aed||0));
+  if(newAmount===null)return;
+  const newMethod=prompt('Payment method: CASH / BANK TRANSFER / CAREEM LINK',x.payment_method||'');
+  if(newMethod===null)return;
+  if(!['CASH','BANK TRANSFER','CAREEM LINK'].includes(newMethod))return alert('Use CASH, BANK TRANSFER or CAREEM LINK only.');
+  const newReference=prompt('Reference / receipt:',x.reference||'');
+  if(newReference===null)return;
+  const newDescription=prompt('Description / note:',x.description||'');
+  if(newDescription===null)return;
+  const reason=prompt('Reason for this modification:');
+  if(reason===null)return;
+  if(!reason.trim())return alert('Please enter the reason for the modification.');
+
+  const amount=Number(newAmount);
+  if(!Number.isFinite(amount)||amount<=0)return alert('Enter a valid amount.');
+
+  const r=await sb.rpc('finance_update_expense_v771',{
+    p_expense_id:id,p_expense_date:newDate,p_category:newCategory,p_amount_aed:amount,
+    p_payment_method:newMethod||null,p_reference:newReference||null,
+    p_description:newDescription||null,p_reason:reason.trim()
+  });
+  if(r.error)return showMsg('globalMsg',r.error.message,'error');
+  showMsg('globalMsg','Expense updated.');
+  await loadFinance();
+}
+
+let pendingExpenseDeleteId=null;
+function deleteExpense(id){
+  if(profile?.role!=='accountant')return showMsg('globalMsg','FINANCE access required.','error');
+  const x=(financeExpenses||[]).find(e=>String(e.id)===String(id));
+  if(!x)return showMsg('globalMsg','Expense not found.','error');
+  pendingExpenseDeleteId=id;
+  el('expenseDeleteReason').value='';
+  el('expenseDeleteTitle').textContent=`Delete ${money(x.amount_aed)} · ${x.category||'Expense'}`;
+  el('expenseDeleteOverlay').classList.remove('hidden');
+}
+function closeExpenseDeleteModal(){
+  el('expenseDeleteOverlay').classList.add('hidden');
+  pendingExpenseDeleteId=null;
+}
+async function confirmDeleteExpense(){
+  if(!pendingExpenseDeleteId)return;
+  const reason=el('expenseDeleteReason').value;
+  const allowed=['DUPLICATE ENTRY','ENTRY CREATED BY MISTAKE','EXPENSE CANCELLED / NOT INCURRED'];
+  if(!allowed.includes(reason))return showMsg('globalMsg','Select a deletion reason.','error');
+  const r=await sb.rpc('finance_delete_expense_v771',{p_expense_id:pendingExpenseDeleteId,p_reason:reason});
+  if(r.error)return showMsg('globalMsg',r.error.message,'error');
+  closeExpenseDeleteModal();
+  showMsg('globalMsg','Expense deleted.');
+  await loadFinance();
+}
+
+
+
+async function loadManualPaymentPlayers(){
+  const sel=el('manualPayPlayer'); if(!sel)return;
+  const r=await sb.from('profiles')
+    .select('id,full_name,fee_exempt,person_type,active')
+    .eq('person_type','player')
+    .eq('active',true)
+    .order('full_name');
+  if(r.error){sel.innerHTML='<option value="">Unable to load players</option>';return;}
+  sel.innerHTML='<option value="">Select player...</option>'+((r.data||[]).map(x=>
+    `<option value="${x.id}" data-exempt="${x.fee_exempt?'1':'0'}">${esc(x.full_name||'Player')}${x.fee_exempt?' · FEE EXEMPT':''}</option>`
+  ).join(''));
+}
+
+async function getCurrentSinglePrice(){
+  try{
+    const r=await sb.rpc('public_list_home_training_options');
+    if(!r.error && Array.isArray(r.data)){
+      const x=r.data.find(o=>Number(o.sessions??o.session_count)===1 && o.active!==false);
+      if(x)return Number(x.price_aed??x.price??60);
+    }
+  }catch(e){}
+  return 60;
+}
+
+async function resolveManualPaymentSelection(){
+  const playerId=el('manualPayPlayer')?.value||'';
+  el('manualPayType').value='';
+  el('manualPaySourceId').value='';
+  el('manualPayFor').value=playerId?'Checking selected option...':'Select a player';
+  el('manualPayAmount').value='';
+
+  if(!playerId)return;
+
+  // Priority 1: a pending package request created from the player's own selection.
+  const pkg=(financePending||[]).find(x=>String(x.player_id)===String(playerId));
+  if(pkg){
+    const label=pkg.plan_code==='PACKAGE4'?'Package 4':'Package 8';
+    el('manualPayType').value=pkg.plan_code;
+    el('manualPaySourceId').value=pkg.id;
+    el('manualPayFor').value=label;
+    el('manualPayAmount').value=Number(pkg.amount_aed||0).toFixed(2);
+    return;
+  }
+
+  // Priority 2: the player's outstanding Single Session fee.
+  const due=(financeSingleDues||[]).find(x=>String(x.player_id)===String(playerId));
+  if(due){
+    const amount=await getCurrentSinglePrice();
+    el('manualPayType').value='SINGLE';
+    el('manualPaySourceId').value=due.id;
+    el('manualPayFor').value='Single Session';
+    el('manualPayAmount').value=Number(amount).toFixed(2);
+    return;
+  }
+
+  el('manualPayFor').value='No pending payment';
+  showMsg('manualPayMsg','This player has no payment currently awaiting FINANCE confirmation.','error');
+}
+
+async function recordManualPayment(){
+  if(profile?.role!=='accountant')return showMsg('manualPayMsg','FINANCE access required.','error');
+
+  const playerId=el('manualPayPlayer').value;
+  const type=el('manualPayType').value;
+  const method=el('manualPayMethod').value;
+  const paidDate=el('manualPayDate').value;
+  const note=el('manualPayNote').value.trim();
+
+  if(!playerId)return showMsg('manualPayMsg','Select a player.','error');
+  if(!type)return showMsg('manualPayMsg','No pending payment was found for this player.','error');
+  if(!['CASH','BANK TRANSFER','CAREEM LINK'].includes(method))
+    return showMsg('manualPayMsg','Select CASH, BANK TRANSFER or CAREEM LINK.','error');
+  if(!paidDate)return showMsg('manualPayMsg','Select the payment date.','error');
+
+  const opt=el('manualPayPlayer').selectedOptions[0];
+  if(opt?.dataset?.exempt==='1'&&!confirm('This player is FEE EXEMPT. Confirm only if money was actually received.'))return;
+
+  const r=await sb.rpc('finance_record_selected_payment_v775',{
+    p_player_id:playerId,
+    p_payment_method:method,
+    p_paid_on:paidDate,
+    p_note:note||null
+  });
+
+  if(r.error)return showMsg('manualPayMsg',r.error.message,'error');
+
+  const saved=r.data?.payment||null;
+
+  // Refresh from database first.
+  await loadFinance();
+
+  // Guarantee immediate visual update even if a SELECT policy/cache delays the fresh row.
+  if(saved && !financePayments.some(x=>String(x.id)===String(saved.id))){
+    financePayments.unshift(saved);
+  }
+  renderFinancePeriodData();
+
+  el('manualPayPlayer').value='';
+  el('manualPayFor').value='Select a player';
+  el('manualPayType').value='';
+  el('manualPaySourceId').value='';
+  el('manualPayAmount').value='';
+  el('manualPayMethod').value='';
+  el('manualPayNote').value='';
+
+  showMsg('manualPayMsg',r.data?.message||'Payment confirmed. Finance has been updated automatically.');
+}
+
+
+async function confirmDeclaredPackagePayment(requestId){
+  if(profile?.role!=='accountant')return showMsg('globalMsg','FINANCE access required.','error');
+  const method=el(`verifyMethod-${requestId}`)?.value||'';
+  const paidOn=el(`verifyDate-${requestId}`)?.value||new Date().toISOString().slice(0,10);
+  if(!['CAREEM LINK','CASH','BANK TRANSFER'].includes(method)){
+    return showMsg('globalMsg','Select CAREEM LINK, CASH or BANK TRANSFER.','error');
+  }
+  if(!confirm(`Confirm receipt of this payment?\n\nMethod: ${method}\nDate: ${paidOn}`))return;
+  const {data,error}=await sb.rpc('finance_confirm_declared_package_v820',{
+    p_request_id:requestId,
+    p_paid_on:paidOn,
+    p_payment_method:method
+  });
+  if(error){
+    showMsg('globalMsg',error.message,'error');
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
+  showMsg('globalMsg',data||'Payment confirmed and package fully activated.');
+  await triggerClubEmailDelivery();
+  await loadFinance();
+}
+
+async function rejectDeclaredPackagePayment(requestId){
+  if(profile?.role!=='accountant')return showMsg('globalMsg','FINANCE access required.','error');
+  if(!confirm('Payment not found. Cancel the provisional package?'))return;
+  const {data,error}=await sb.rpc('finance_reject_declared_package_v778',{p_request_id:requestId});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',data||'Provisional payment rejected.','warn');
+  await loadFinance();
+}
+
+async function approvePackage(id,code){
+  const amount=code==='PACKAGE4'?210:410;
+  const method=prompt('Payment method (cash, bank transfer, etc.):')||'';
+  if(!confirm(`Confirm receipt of AED ${amount}?`))return;
+  const{data,error}=await sb.rpc('approve_package_request',{p_request_id:id,p_amount:amount,p_payment_method:method||null});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg',(data||'Payment approved.')+' Payment Acknowledgement recorded.');
+  await loadFinance();
+}
+async function paySingle(id){
+  const method=prompt('Payment method (cash, bank transfer, etc.):')||'';
+  if(!confirm('Confirm receipt of AED 60?'))return;
+  const{error}=await sb.rpc('record_single_payment',{p_registration_id:id,p_amount:60,p_payment_method:method||null,p_notes:'Finance confirmed payment'});
+  if(error)return showMsg('globalMsg',error.message,'error');
+  showMsg('globalMsg','Single Fee confirmed. Payment Acknowledgement recorded.');
+  await loadFinance();
+}
+async function addExpense(){
+  const amount=Number(el('expAmount').value||0);
+  let category=el('expCategory').value,method=el('expMethod').value;
+  if(category==='__new__'){
+    category=el('expCategoryOther').value.trim();
+    if(!category)return showMsg('globalMsg','Enter the new category.','error');
+    const r=await sb.rpc('finance_add_expense_category',{p_name:category});
+    if(r.error)return showMsg('globalMsg',r.error.message,'error');
+  }
+  if(!category||amount<=0)return showMsg('globalMsg','Select a category and enter a valid amount.','error');
+  if(!['CASH','BANK TRANSFER','CAREEM LINK'].includes(method))return showMsg('globalMsg','Select CASH, BANK TRANSFER or CAREEM LINK.','error');
+  const{error}=await sb.from('expenses').insert({
+    expense_date:el('expDate').value||new Date().toISOString().slice(0,10),
+    category,description:el('expDesc').value.trim()||null,amount_aed:amount,
+    payment_method:method||null,reference:el('expRef').value.trim()||null,recorded_by:currentUser.id
+  });
+  if(error)return showMsg('globalMsg',error.message,'error');
+  ['expAmount','expRef','expDesc','expCategoryOther'].forEach(id=>el(id).value='');
+  showMsg('globalMsg','Expense recorded.');
+  await loadFinance();
+}
+
+function initReportDates(){
+  if(el('reportFrom').value)return;
+  const n=new Date();el('reportTo').value=n.toISOString().slice(0,10);
+  el('reportFrom').value=new Date(n.getFullYear(),n.getMonth(),1).toISOString().slice(0,10);
+}
+function filteredFinance(){
+  const r=financeDateRange(),f=financeSnapshot();
+  return{from:r.from,to:r.to,p:f.payments,e:f.expenses,inc:f.income,exp:f.expense,bal:f.balance};
+}
+function reportHtml(){
+  const r=filteredFinance();
+  const payRows=r.p.map(x=>`<tr><td>${esc((x.payment_date||x.created_at||'').slice(0,10))}</td><td>${esc(x.payment_type||'Payment')}</td><td>${money(x.amount_aed)}</td></tr>`).join('')||'<tr><td colspan="3">No payments.</td></tr>';
+  const expRows=r.e.map(x=>`<tr><td>${esc(x.expense_date)}</td><td>${esc(x.category||'—')}</td><td>${money(x.amount_aed)}</td></tr>`).join('')||'<tr><td colspan="3">No expenses.</td></tr>';
+  return `<!doctype html><html><head><meta charset="utf-8"><title>HC Dubai Finance Report</title><style>body{font-family:Arial;color:#0A1B3D;margin:36px}.k{display:inline-block;border:1px solid #ddd;border-radius:10px;padding:12px;margin-right:8px}table{width:100%;border-collapse:collapse;margin:16px 0}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}</style></head><body><h1>HANDBALL CLUB DUBAI</h1><p>Finance Report · ${r.from} to ${r.to}</p><div class="k">Income<br><b>${money(r.inc)}</b></div><div class="k">Expenses<br><b>${money(r.exp)}</b></div><div class="k">Balance<br><b>${money(r.bal)}</b></div><h2>Payments</h2><table><tr><th>Date</th><th>Type</th><th>Amount</th></tr>${payRows}</table><h2>Expenses</h2><table><tr><th>Date</th><th>Category</th><th>Amount</th></tr>${expRows}</table><p>HC DUBAI INFO · WhatsApp: +971 58 558 8323</p></body></html>`;
+}
+function printFinanceReport(){
+  const w=window.open('','_blank'); if(!w)return showMsg('globalMsg','Allow pop-ups to print the report.','error');
+  w.document.write(reportHtml());w.document.close();setTimeout(()=>w.print(),300);
+}
+async function shareFinanceReport(){
+  const r=filteredFinance();
+  const txt=`Handball Club Dubai Finance Report\n${r.from} to ${r.to}\nIncome: ${money(r.inc)}\nExpenses: ${money(r.exp)}\nBalance: ${money(r.bal)}`;
+  if(navigator.share){try{await navigator.share({title:'HC Dubai Finance Report',text:txt})}catch(e){}}
+  else navigator.clipboard.writeText(txt).then(()=>showMsg('globalMsg','Report summary copied. You can paste and share it.'));
+}
+
+
+async function loadHomeTrainingOptions(){
+  const target=el('homeTrainingOptionsDynamic');if(!target)return;
+  const{data,error}=await sb.rpc('public_list_home_training_options');
+  if(error||!data||!data.length){target.innerHTML='<div class="muted">Training options currently unavailable.</div>';return}
+  target.innerHTML=`<div class="grid3">${data.map(o=>`<div class="plan"><strong>${esc(o.name)}</strong><div class="price">AED ${Number(o.price_aed||0).toFixed(0)}</div><div>${Number(o.sessions||1)} ${Number(o.sessions||1)===1?'session':'sessions'}</div>${o.description?`<div class="muted">${esc(o.description)}</div>`:''}</div>`).join('')}</div>`;
+}
+async function initHome(){
+  await loadHomeTrainingOptions();
+  const hasSession=await loadSession(false);
+  if(hasSession){
+    await loadSession(true);
+    return;
+  }
+  showHome();
+}
+initHome();
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const src=el('managementAlerts');
+  if(src){
+    const obs=new MutationObserver(syncTechnicalAlerts);
+    obs.observe(src,{childList:true,subtree:true,characterData:true});
+  }
+  const cnt=el('managementAlertCount');
+  if(cnt){
+    const obs2=new MutationObserver(syncTechnicalAlerts);
+    obs2.observe(cnt,{childList:true,subtree:true,characterData:true});
+  }
+  syncTechnicalAlerts();
+});
+
+</script>
+</body>
+</html>
