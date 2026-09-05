@@ -1,9 +1,18 @@
 {
-  "name": "HC Dubai Team App",
+  "name": "HC Dubai Management App",
   "short_name": "HC Dubai",
+  "description": "Official Handball Club Dubai management application",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#F4F6F8",
   "theme_color": "#0A1B3D",
-  "icons": []
+  "icons": [
+    {
+      "src": "./hc_dubai_logo_highres.jpg",
+      "sizes": "2048x2048",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
 }
