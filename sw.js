@@ -1,13 +1,14 @@
-const CACHE_NAME = 'hc-dubai-v4-20260903';
+const CACHE_NAME = 'hc-dubai-v5-final-20260905';
 
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './hc_dubai_logo.jpg',
   './hc_dubai_logo_highres.jpg'
 ];
 
-// Install new service worker
+// Install the final service worker and pre-cache core app files.
 self.addEventListener('install', event => {
   self.skipWaiting();
 
@@ -17,7 +18,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// Remove all old caches
+// Remove all previous HC Dubai caches and take control immediately.
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
@@ -32,21 +33,39 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Network first, cache fallback
+// Network-first for same-origin GET requests, with cache fallback.
+// External API/Supabase requests are never stored in the PWA cache.
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
+  const request = event.request;
+
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then(response => {
-        const copy = response.clone();
+        if (response && response.ok) {
+          const copy = response.clone();
 
-        caches.open(CACHE_NAME)
-          .then(cache => cache.put(event.request, copy))
-          .catch(() => {});
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put(request, copy))
+            .catch(() => {});
+        }
 
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(async () => {
+        const cached = await caches.match(request);
+
+        if (cached) return cached;
+
+        if (request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+
+        throw new Error('Offline and resource not cached');
+      })
   );
 });
