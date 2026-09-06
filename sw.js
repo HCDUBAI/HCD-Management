@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hc-dubai-v9-2-20260906';
+const CACHE_NAME = 'hc-dubai-v10-0-20260906';
 
 const ASSETS = [
   './',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(event.request.url);
 
-  // Never cache external requests, including Supabase.
+  // Do not cache external requests, including Supabase.
   if (url.origin !== self.location.origin) return;
 
   event.respondWith(
