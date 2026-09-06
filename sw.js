@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hc-dubai-v5-final-20260905';
+const CACHE_NAME = 'hc-dubai-v9-2-20260906';
 
 const ASSETS = [
   './',
@@ -8,7 +8,6 @@ const ASSETS = [
   './hc_dubai_logo_highres.jpg'
 ];
 
-// Install the final service worker and pre-cache core app files.
 self.addEventListener('install', event => {
   self.skipWaiting();
 
@@ -18,7 +17,6 @@ self.addEventListener('install', event => {
   );
 });
 
-// Remove all previous HC Dubai caches and take control immediately.
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
@@ -33,39 +31,38 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Network-first for same-origin GET requests, with cache fallback.
-// External API/Supabase requests are never stored in the PWA cache.
 self.addEventListener('fetch', event => {
-  const request = event.request;
+  if (event.request.method !== 'GET') return;
 
-  if (request.method !== 'GET') return;
+  const url = new URL(event.request.url);
 
-  const url = new URL(request.url);
+  // Never cache external requests, including Supabase.
   if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(request)
+    fetch(event.request)
       .then(response => {
         if (response && response.ok) {
           const copy = response.clone();
 
           caches.open(CACHE_NAME)
-            .then(cache => cache.put(request, copy))
-            .catch(() => {});
+            .then(cache => cache.put(event.request, copy));
         }
 
         return response;
       })
-      .catch(async () => {
-        const cached = await caches.match(request);
+      .catch(() =>
+        caches.match(event.request)
+          .then(cached => {
+            if (cached) return cached;
 
-        if (cached) return cached;
+            // Offline fallback for app navigation.
+            if (event.request.mode === 'navigate') {
+              return caches.match('./index.html');
+            }
 
-        if (request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-
-        throw new Error('Offline and resource not cached');
-      })
+            return Response.error();
+          })
+      )
   );
 });
