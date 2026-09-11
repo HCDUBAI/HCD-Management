@@ -983,23 +983,6 @@ function goToManagementAction(targetId){
   target.style.outline='3px solid rgba(82,174,224,.45)';
   setTimeout(()=>{target.style.outline='';},1800);
 }
-
-
-function setLoginMode(mode){
-  loginMode=mode;
-  if(!el('loginTitle'))return;
-  if(mode==='management'){
-    el('loginLabel').textContent='Restricted Access';
-    el('loginTitle').textContent='Management Area';
-    el('managementLoginNotice').innerHTML='';
-    el('loginCreateAccountBtn').classList.add('hidden');
-  }else{
-    el('loginLabel').textContent='HC Dubai';
-    el('loginTitle').textContent='Member Login';
-    el('managementLoginNotice').innerHTML='';
-    el('loginCreateAccountBtn').classList.remove('hidden');
-  }
-}
 function showHome(){loadHomeEventsV91();
   el('homeView').classList.remove('hidden');el('authView').classList.add('hidden');el('appView').classList.add('hidden');
   el('loginCard').classList.remove('hidden');el('signupCard').classList.add('hidden');setLoginMode('member');
@@ -1043,7 +1026,6 @@ function updateSignupMinorNotice(){
 }
 
 function togglePassword(id,btn){const x=el(id);if(!x)return;x.type=x.type==='password'?'text':'password';if(btn)btn.textContent=x.type==='password'?'SHOW':'HIDE'}
-function hasManagementAccess(){return !!profile && (profile.role==='admin'||profile.role==='accountant'||profile.can_manage_merchandise||profile.can_view_committee_dashboard||profile.can_manage_events)}
 async function showManagementHub(){
  if(el('managementContactCard'))el('managementContactCard').classList.add('hidden');clearModuleMessagesV91();
  ['adminView','financeView','merchandiseManagerView','tournamentManagerView','committeeView','eventsManagerView'].forEach(id=>el(id)?.classList.add('hidden'));
@@ -1059,23 +1041,6 @@ async function showManagementHub(){
  el('managementHubCards').innerHTML=cards.join('');
 }
 async function openManagementModule(which){el('managementHubView').classList.add('hidden');if(el('managementContactCard'))el('managementContactCard').classList.add('hidden');clearModuleMessagesV91();['adminView','financeView','merchandiseManagerView','tournamentManagerView','committeeView','eventsManagerView'].forEach(id=>el(id)?.classList.add('hidden'));if(which==='technical'){el('adminView').classList.remove('hidden');await loadAdmin()}if(which==='finance'){el('financeView').classList.remove('hidden');if(el('legacyImportCard'))el('legacyImportCard').classList.toggle('hidden',profile.role!=='accountant');if(profile.role==='accountant')el('accountantActions').classList.remove('hidden');await loadFinance();if(profile.role==='accountant')await loadLegacyImportsV90()}if(which==='merchandise'){el('merchandiseManagerView').classList.remove('hidden');await loadMerchandiseManager()}if(which==='tournament'){el('tournamentManagerView').classList.remove('hidden');await loadTournamentManagerV90()}if(which==='committee'){el('committeeView').classList.remove('hidden');await loadCommitteeV90()}if(which==='events'){el('eventsManagerView').classList.remove('hidden');await loadEventsManagerV91()}}
-
-async function signUp(){
-  const full_name=el('signupName').value.trim();
-  const email=el('signupEmail').value.trim();
-  const phone=el('signupPhone').value.trim();
-  const date_of_birth=el('signupDob').value;
-  const gender=el('signupGender').value;
-  const nationality=el('signupNationality').value;
-  const position=el('signupPosition').value;
-  const handball_experience=el('signupExperience').value.trim();
-  const password=el('signupPassword').value;
-  const signupPhoto=el('signupPhoto')?.files?.[0];
-
-  if(!full_name || !email || !phone || !date_of_birth || !gender || !nationality || !position || !handball_experience || !password || !signupPhoto){
-    return showMsg('signupMsg','Please complete all account creation fields.','error');
-  }
-
   const pc=await validateProfilePhotoV91(signupPhoto);if(!pc.ok)return showMsg('signupMsg',pc.message,'error');
   const eligibility=await sb.rpc('check_registration_eligibility',{p_email:email,p_phone:phone});
   if(eligibility.error)return showMsg('signupMsg',eligibility.error.message,'error');
@@ -1097,33 +1062,6 @@ async function signUp(){
     loadSession(true);
   }
 }
-async function signIn(){
-  const{error}=await sb.auth.signInWithPassword({email:el('loginEmail').value.trim(),password:el('loginPassword').value});
-  if(error)return showMsg('authMsg',error.message,'error');
-  const requestedMode=loginMode;
-  const ok=await loadSession(false);
-  if(!ok)return;
-  if(requestedMode==='management' && !hasManagementAccess()){
-    await sb.auth.signOut();
-    currentUser=null;profile=null;
-    setLoginMode('management');
-    return showMsg('authMsg','Access denied. This area is restricted to authorized HC Dubai management accounts.','error');
-  }
-  await loadSession(true);
-}
-async function signOut(){await sb.auth.signOut();location.reload()}
-
-async function loadSession(openApp=true){
-  const{data:{session}}=await sb.auth.getSession(); if(!session)return false;
-  currentUser=session.user;
-  try{
-    const blockedCheck=await sb.rpc('current_user_is_blocked');
-    if(!blockedCheck.error && blockedCheck.data===true){
-      await sb.auth.signOut();
-      currentUser=null;
-      showMsg('authMsg','Your account requires review by Handball Club Dubai. Please contact HC DUBAI INFO.','error');
-      return false;
-    }
   }catch(e){}
   try{await sb.rpc('run_participant_maintenance')}catch(e){}
   const{data,error}=await sb.from('profiles').select('*').eq('id',currentUser.id).single();
