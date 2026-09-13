@@ -23,7 +23,7 @@ async function showManagementHub(){
   const a=accessRoleV92();
   if(isTechnicalV92()){
     cards.push(`<div class="managementModuleCard"><div class="label">TECHNICAL</div><h3>🤾 Technical Management</h3><div class="muted">Players · Training · Attendance · Approvals</div><button onclick="openManagementModule('technical')">OPEN</button></div>`);
-    cards.push(`<div class="managementModuleCard"><div class="label">TOURNAMENT</div><h3>🏆 Tournament Management</h3><div class="muted">Local / Abroad · Availability · Selection</div><button onclick="openManagementModule('tournament')">OPEN</button></div>`);
+    cards.push(`<div class="managementModuleCard"><div class="label">TOURNAMENT</div><h3>🏆 Tournament Management</h3><div class="muted">Local / International · Availability · Selection</div><button onclick="openManagementModule('tournament')">OPEN</button></div>`);
   }
   if(isFinanceManagerV92()){
     cards.push(`<div class="managementModuleCard"><div class="label">FINANCE</div><h3>💰 Finance</h3><div class="muted">Payments · Expenses · Budget · Reports</div><button onclick="openManagementModule('finance')">OPEN</button></div>`);
