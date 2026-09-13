@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hc-dubai-v11-refactor-20260913';
+const CACHE_NAME = 'hc-dubai-v11-refactor-20260913-2';
 
 const ASSETS = [
   './',
