@@ -1,11 +1,21 @@
-const CACHE_NAME = 'hc-dubai-v10-0-20260906';
+const CACHE_NAME = 'hc-dubai-v11-refactor-20260913';
 
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './hc_dubai_logo.jpg',
-  './hc_dubai_logo_highres.jpg'
+  './hc_dubai_logo_highres.jpg',
+  './js/config.js',
+  './js/utils.js',
+  './js/auth.js',
+  './js/players.js',
+  './js/events.js',
+  './js/finance.js',
+  './js/merchandise.js',
+  './js/admin.js',
+  './js/management.js',
+  './js/main.js'
 ];
 
 self.addEventListener('install', event => {
