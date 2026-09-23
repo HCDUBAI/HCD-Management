@@ -23,6 +23,14 @@ function setLoginMode(mode){
 function hasManagementAccess(){return !!profile && (profile.role==='admin'||profile.role==='accountant'||profile.can_manage_merchandise||profile.can_view_committee_dashboard||profile.can_manage_events)}
 async function signOut(){await sb.auth.signOut();location.reload()}
 async function loadSession(openApp=true){
+  const recoveryLink=
+    window.location.hash.includes('type=recovery');
+
+  if(recoveryLink){
+    showPasswordRecoveryForm();
+    return true;
+  }
+
   const{data:{session}}=await sb.auth.getSession();
   if(!session)return false;
 
@@ -190,7 +198,96 @@ async function loadSession(openApp=true){
 
   return true;
 }
+async function updateRecoveredPassword(){
+  const password=el('newPassword').value;
+  const confirmation=el('confirmNewPassword').value;
 
+  if(password.length<8){
+    return showMsg(
+      'passwordRecoveryMsg',
+      'The new password must contain at least 8 characters.',
+      'error'
+    );
+  }
+
+  if(password!==confirmation){
+    return showMsg(
+      'passwordRecoveryMsg',
+      'The two passwords do not match.',
+      'error'
+    );
+  }
+
+  const {error}=await sb.auth.updateUser({
+    password
+  });
+
+  if(error){
+    return showMsg(
+      'passwordRecoveryMsg',
+      error.message,
+      'error'
+    );
+  }
+
+  await sb.auth.signOut();
+
+  currentUser=null;
+  profile=null;
+
+  el('newPassword').value='';
+  el('confirmNewPassword').value='';
+  el('passwordRecoveryCard').classList.add('hidden');
+  el('signupCard').classList.add('hidden');
+  el('loginCard').classList.remove('hidden');
+  el('homeView').classList.add('hidden');
+  el('authView').classList.remove('hidden');
+
+  window.history.replaceState(
+    {},
+    document.title,
+    window.location.pathname
+  );
+
+  showMsg(
+    'authMsg',
+    'Password updated successfully. You can now sign in with your new password.',
+    'success'
+  );
+}
+async function requestPasswordReset(){
+  const email=el('loginEmail').value.trim();
+
+  if(!email){
+    return showMsg(
+      'authMsg',
+      'Enter your registered email address first.',
+      'error'
+    );
+  }
+
+  const redirectTo=
+    `${window.location.origin}${window.location.pathname}`;
+
+  const {error}=await sb.auth.resetPasswordForEmail(
+    email,
+    {redirectTo}
+  );
+
+  if(error){
+    return showMsg(
+      'authMsg',
+      error.message,
+      'error'
+    );
+  }
+
+  showMsg(
+    'authMsg',
+    'If this email is registered, a password recovery link has been sent. Please also check your spam folder.',
+    'success'
+  );
+}
 async function signIn(){
   const{error}=await sb.auth.signInWithPassword({
     email:el('loginEmail').value.trim(),
@@ -320,3 +417,24 @@ async function signUp(){
     await loadSession(true);
   }
 }
+
+function showPasswordRecoveryForm(){
+  el('homeView')?.classList.add('hidden');
+  el('appView')?.classList.add('hidden');
+  el('authView')?.classList.remove('hidden');
+
+  el('loginCard')?.classList.add('hidden');
+  el('signupCard')?.classList.add('hidden');
+  el('passwordRecoveryCard')?.classList.remove('hidden');
+
+  window.scrollTo({
+    top:0,
+    behavior:'smooth'
+  });
+}
+
+sb.auth.onAuthStateChange((event)=>{
+  if(event==='PASSWORD_RECOVERY'){
+    showPasswordRecoveryForm();
+  }
+});

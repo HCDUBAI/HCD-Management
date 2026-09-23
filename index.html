@@ -256,8 +256,11 @@ th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:left;vert
     </div>
     <div id="homeSession" class="homeSession"></div>
   </div>
-  <div class="card">
-    <div class="label">Training Options</div><div id="homeTrainingOptionsDynamic"></div>
+   <div class="card">
+    <div class="label">HC DUBAI Community</div>
+    <h3>Let's Support Our Handball Community</h3>
+    <p>HC Dubai is an amateur handball community that brings together players who share a passion for handball. All contributions are reinvested in the team, its activities and operational needs.</p>
+    
   </div>
   <div class="card compactCard" id="homeEventsCard">
     <details open>
@@ -286,8 +289,55 @@ th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:left;vert
     <input id="loginEmail" type="email" placeholder="Email">
     <div class="passwordRow"><input id="loginPassword" type="password" placeholder="Password"><button type="button" class="secondary showPasswordBtn" onclick="togglePassword('loginPassword',this)">SHOW</button></div>
     <button onclick="signIn()">Sign in</button>
+    <button type="button" class="secondary" onclick="requestPasswordReset()">
+  Forgot password?
+</button>
     <button id="loginCreateAccountBtn" class="secondary" onclick="showJoin()">Create account</button>
     <button class="secondary" onclick="showHome()">← Back to Home</button>
+  </div>
+    <div id="passwordRecoveryCard" class="card hidden">
+    <div class="label">HC Dubai Account Security</div>
+    <h3>Create a New Password</h3>
+
+    <div id="passwordRecoveryMsg"></div>
+
+    <p class="muted">
+      Enter and confirm your new password.
+    </p>
+
+    <div class="passwordRow">
+      <input
+        id="newPassword"
+        type="password"
+        placeholder="New password (minimum 8 characters)"
+      >
+      <button
+        type="button"
+        class="secondary showPasswordBtn"
+        onclick="togglePassword('newPassword',this)"
+      >
+        SHOW
+      </button>
+    </div>
+
+    <div class="passwordRow">
+      <input
+        id="confirmNewPassword"
+        type="password"
+        placeholder="Confirm new password"
+      >
+      <button
+        type="button"
+        class="secondary showPasswordBtn"
+        onclick="togglePassword('confirmNewPassword',this)"
+      >
+        SHOW
+      </button>
+    </div>
+
+    <button onclick="updateRecoveredPassword()">
+      UPDATE PASSWORD
+    </button>
   </div>
   <div id="signupCard" class="card hidden">
     <div class="label">Join HC Dubai</div>
@@ -357,7 +407,30 @@ th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:left;vert
       <div id="pendingApprovalStatus" class="notice warn"><strong>TECHNICAL APPROVAL REQUIRED</strong><br>Your account has been created and is awaiting approval by Handball Club Dubai.</div>
       <p id="pendingApprovalText">You can sign in and check this status, but training registration and payment/package activation will become available only after your account has been approved.</p>
     </div>
+    <div id="pendingPhotoCard" class="card">
+      <div class="label">Required Before TECHNICAL Approval</div>
+      <h3>Profile Photo</h3>
 
+      <div id="pendingPhotoStatus"></div>
+
+      <div id="pendingPhotoForm">
+        <p class="muted">
+          Upload a clear, recent individual photo showing your face.
+          Group photos, logos, illustrations and unrelated images are not accepted.
+        </p>
+
+        <input
+          id="pendingPhoto"
+          type="file"
+          accept="image/*"
+          capture="user"
+        >
+
+        <button onclick="uploadPendingProfilePhoto()">
+          UPLOAD PROFILE PHOTO
+        </button>
+      </div>
+    </div>
     <div id="pendingMinorWaiverCard" class="card hidden">
       <div class="label">Minor Player – Required Before TECHNICAL Review</div>
       <h3>Parental Consent, Liability Waiver & Emergency Authorization</h3>
@@ -750,13 +823,13 @@ th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:left;vert
     <div id="financeTrainingOptionsCard" class="card compactCard">
   <details>
     <summary class="compactSummary">
-      <span><span class="label">Training Options – Home Page</span><strong>Manage Training Options</strong></span>
+<span><span class="label">Player Training Plans</span><strong>Manage Training Plans & Prices</strong></span>
       <span class="muted expandLabel">EXPAND</span>
     </summary>
     <div class="compactBody">
-      <div class="label">Training Options – Home Page</div>
-      <h3>Manage Training Options</h3>
-      <div class="muted">FINANCE can update the options shown on the Home page.</div>
+      <div class="label">Player Training Plans</div>
+<h3>Manage Training Plans & Prices</h3>
+      <div class="muted">Authorized Finance users can update the training plans and prices available to approved players within their private area.</div>
       <div id="financeTrainingOptions" style="margin-top:12px">
   <div class="training">
     <div class="financeOptionGrid">
