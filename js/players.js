@@ -75,39 +75,73 @@ async function loadPlayer(){
     el('credits').textContent=`${bonusCount} BONUS`;
   }else el('credits').textContent='—';
 
-  const{data:req}=await sb.from('payment_requests').select('*').eq('player_id',currentUser.id).eq('status','pending').order('requested_at',{ascending:false}).limit(1);
+    const{data:req}=await sb.from('payment_requests').select('*').eq('player_id',currentUser.id).eq('status','pending').order('requested_at',{ascending:false}).limit(1);
   const pendingReq=req?.[0]||null;
-  if(pendingReq?.payment_declared_at && profile.billing_mode!=='single')el('credits').textContent=`${bonusCount} provisional`;
+
   el('playerPaymentCard').classList.add('hidden');
   el('playerPaymentContent').innerHTML='';
+
   if(pendingReq){
     const declared=!!pendingReq.payment_declared_at;
     const pkgLabel=pendingReq.plan_code==='PACKAGE4'?'Package 4':'Package 8';
+
     if(declared){
-      el('paymentState').textContent='PROVISIONAL';
-      el('planStatus').innerHTML='<div class="notice warn"><strong>PROVISIONALLY ACTIVE · PAYMENT VERIFICATION PENDING</strong><br>Your package can be used now while HC Dubai FINANCE verifies the payment.</div>';
+      el('paymentState').textContent='AWAITING VERIFICATION';
+
+      el('planStatus').innerHTML=
+        '<div class="notice warn"><strong>PAYMENT DECLARED · VERIFICATION PENDING</strong><br>'+
+        'Your package is not active yet. Training credits will become available only after HC Dubai confirms receipt of the payment.</div>';
+
       el('playerPaymentCard').classList.remove('hidden');
-      el('playerPaymentContent').innerHTML=`<div class="notice success"><strong>PACKAGE PROVISIONALLY ACTIVE</strong><br>Your ${esc(pkgLabel)} is now provisionally active and you can register for training immediately.<br><br>Your payment of <strong>${money(pendingReq.amount_aed||0)}</strong> is awaiting verification by HC Dubai FINANCE. Once verified, your package will be fully confirmed.<br><span class="small">If the payment cannot be verified, the provisional package may be cancelled and the account/payment status adjusted accordingly.</span></div>`;
+
+      el('playerPaymentContent').innerHTML=
+        `<div class="notice info">`+
+        `<strong>PAYMENT VERIFICATION IN PROGRESS</strong><br>`+
+        `You declared a payment of <strong>${money(pendingReq.amount_aed||0)}</strong> for your ${esc(pkgLabel)}.<br><br>`+
+        `HC Dubai must verify receipt before the package and its training credits are activated.`+
+        `<br><span class="small">You cannot start another payment or select another plan while this verification is pending.</span>`+
+        `</div>`;
     }else{
       el('paymentState').textContent='PAYMENT REQUIRED';
-      el('planStatus').innerHTML='<div class="notice warn">Package selected · payment required.</div>';
+
+      el('planStatus').innerHTML=
+        '<div class="notice warn">Package selected · payment required.</div>';
+
       el('playerPaymentCard').classList.remove('hidden');
-      el('playerPaymentContent').innerHTML=`<div class="price">${money(pendingReq.amount_aed||0)}</div><p>Complete payment to activate your ${esc(pkgLabel)}.</p><div class="notice info"><strong>Complete payment using the Careem app on your phone.</strong><br>Open this page on your mobile device and tap <strong>PAY NOW</strong>.</div><button onclick="openHCPaymentLink()">PAY NOW</button><button class="secondary" onclick="declarePackagePaymentCompleted('${pendingReq.id}')">I HAVE COMPLETED PAYMENT</button><div class="muted">After completing payment, return here and select <strong>I HAVE COMPLETED PAYMENT</strong>. Your package will become provisionally active immediately while FINANCE verifies receipt.</div>`;
+
+      el('playerPaymentContent').innerHTML=
+        `<div class="price">${money(pendingReq.amount_aed||0)}</div>`+
+        `<p>Complete payment to request activation of your ${esc(pkgLabel)}.</p>`+
+        `<div class="notice info">`+
+        `<strong>Complete payment using the Careem app on your phone.</strong><br>`+
+        `Open this page on your mobile device and tap <strong>PAY NOW</strong>.`+
+        `</div>`+
+        `<button onclick="openHCPaymentLink()">PAY NOW</button>`+
+        `<button class="secondary" onclick="declarePackagePaymentCompleted('${pendingReq.id}')">I HAVE COMPLETED PAYMENT</button>`+
+        `<div class="muted">After completing payment, return here and select <strong>I HAVE COMPLETED PAYMENT</strong>. `+
+        `The package will remain inactive until HC Dubai verifies receipt.</div>`;
     }
   }
-  else if(!profile.plan_selected){el('paymentState').textContent='NOT SELECTED';el('planStatus').innerHTML='<div class="notice info">Choose Single Session, Package 4 or Package 8.</div>'}
+  else if(!profile.plan_selected){
+    el('paymentState').textContent='NOT SELECTED';
+    el('planStatus').innerHTML='<div class="notice info">Choose Single Session, Package 4 or Package 8.</div>';
+  }
   else if(profile.billing_mode==='single'){
     el('paymentState').textContent=bonusCount?'BONUS AVAILABLE':'PER SESSION';
     el('planStatus').innerHTML=bonusCount
-      ?`<div class="notice success">${bonusCount} bonus training credit${bonusCount===1?'':'s'} available. The bonus will be used automatically on your next registration.</div>`
-      :'<div class="notice info">Single Session selected — AED 60 per training.</div>';
+      ? `<div class="notice success">${bonusCount} bonus training credit${bonusCount===1?'':'s'} available. The bonus will be used automatically on your next registration.</div>`
+      : '<div class="notice info">Single Session selected — AED 60 per training.</div>';
   }
   else if(remaining>0||bonusCount>0){
     el('paymentState').textContent=bonusCount?'PAID + BONUS':'PAID';
-    el('planStatus').innerHTML=`<div class="notice success">Package active.${bonusCount?' '+bonusCount+' bonus training credit'+(bonusCount===1?'':'s')+' available.':''}</div>`;
+    el('planStatus').innerHTML=
+      `<div class="notice success">Package active.${bonusCount?' '+bonusCount+' bonus training credit'+(bonusCount===1?'':'s')+' available.':''}</div>`;
   }
-  else{el('paymentState').textContent='NOT ACTIVE';el('planStatus').innerHTML='<div class="notice warn">Package selected but not yet active.</div>'}
-
+  else{
+    el('paymentState').textContent='NOT ACTIVE';
+    el('planStatus').innerHTML=
+      '<div class="notice warn">Package selected but not yet active.</div>';
+  }
   const now=new Date().toISOString();
   const{data:tr,error:tErr}=await sb.from('trainings').select('*').eq('cancelled',false).eq('registration_open',true).gte('starts_at',now).order('starts_at').limit(1);
   if(tErr)return showMsg('globalMsg',tErr.message,'error');
@@ -134,14 +168,56 @@ async function loadPlayer(){
     el('cancelRegistrationBtn').classList.add('hidden');
   }
 
-  const unpaid=regs.some(r=>r.payment_status==='due'&&r.attendance==='present');
-  el('playerNotice').innerHTML='';
-  if(!profile.active)el('playerNotice').innerHTML='<div class="notice error">Profile inactive. Contact HC DUBAI INFO.</div>';
-  else if(!profile.plan_selected)el('playerNotice').innerHTML='<div class="notice warn">Choose a payment plan before registering for training.</div>';
-  else if(minor&&!waiver)el('playerNotice').innerHTML='<div class="notice error">Parental waiver must be signed before registration and payment.</div>';
-  else if(profile.billing_mode==='single'&&unpaid)el('playerNotice').innerHTML='<div class="notice error">Previous training payment is outstanding. Payment is required before registering for the next training.</div>';
-  else if(profile.billing_mode!=='single'&&remaining<=0)el('playerNotice').innerHTML='<div class="notice error">No active training credits. Complete payment before registration.</div>';
+  const unpaid=regs.some(
+    r=>r.payment_status==='due' && r.attendance==='present'
+  );
 
+  let registrationBlockMessage='';
+  let registrationBlockType='error';
+
+  if(!profile.active){
+    registrationBlockMessage=
+      'Profile inactive. Contact HC DUBAI INFO.';
+  }
+  else if(!profile.plan_selected){
+    registrationBlockMessage=
+      'Choose a payment plan before registering for training.';
+    registrationBlockType='warn';
+  }
+  else if(minor&&!waiver){
+    registrationBlockMessage=
+      'Parental waiver must be signed before registration and payment.';
+  }
+  else if(pendingReq?.payment_declared_at){
+    registrationBlockMessage=
+      'Your payment is awaiting verification. Training registration will become available after the payment has been verified.';
+    registrationBlockType='warn';
+  }
+  else if(pendingReq){
+    registrationBlockMessage=
+      'Complete your current package payment before registering for training.';
+    registrationBlockType='warn';
+  }
+  else if(profile.billing_mode==='single'&&unpaid){
+    registrationBlockMessage=
+      'Previous training payment is outstanding. Payment is required before registering for the next training.';
+  }
+  else if(
+    profile.billing_mode!=='single' &&
+    remaining<=0 &&
+    bonusCount<=0
+  ){
+    registrationBlockMessage=
+      'No active training credits. Complete payment verification before registering for training.';
+  }
+
+  el('playerNotice').innerHTML=registrationBlockMessage
+    ? `<div class="notice ${registrationBlockType}">${registrationBlockMessage}</div>`
+    : '';
+
+  if(registrationBlockMessage && nextTrainingRow && !already){
+    el('registerBtn').disabled=true;
+  }
   el('history').innerHTML=regs.length?regs.map(r=>{
     const map=r.trainings?.map_url?` · <a href="${esc(r.trainings.map_url)}" target="_blank" rel="noopener">Google Maps</a>`:'';
     const payLabel=r.payment_source==='bonus'?'BONUS CREDIT':String(r.payment_status||'').replaceAll('_',' ').toUpperCase();
@@ -191,12 +267,55 @@ async function markNotificationRead(id){
 }
 
 async function choosePlan(plan){
-  if(plan==='package4'||plan==='package8'){const ap=await sb.rpc('player_active_package_v91');if(!ap.error&&ap.data&&Number(ap.data.credits_remaining)>0)return showMsg('globalMsg',`ACTIVE PACKAGE ALREADY AVAILABLE · You still have ${ap.data.credits_remaining} training credits remaining. A new package can only be purchased once the current package has been fully used.`,'warn');}
-  if(!(profile?.safety_rules_version===SAFETY_RULES_VERSION && profile?.safety_rules_acknowledged_at)){
-    return showMsg('globalMsg','Please acknowledge the Player Safety & Participation Rules before selecting a plan.','error');
+  const activePackage=await sb.rpc('player_active_package_v91');
+
+  if(
+    !activePackage.error &&
+    activePackage.data &&
+    Number(activePackage.data.credits_remaining)>0
+  ){
+    return showMsg(
+      'globalMsg',
+      `CURRENT PACKAGE STILL ACTIVE · You have ${activePackage.data.credits_remaining} training credit${Number(activePackage.data.credits_remaining)===1?'':'s'} remaining. Use all remaining credits before selecting another plan or starting another payment.`,
+      'warn'
+    );
   }
+
+  const pendingPayment=await sb
+    .from('payment_requests')
+    .select('id,payment_declared_at')
+    .eq('player_id',currentUser.id)
+    .eq('status','pending')
+    .order('requested_at',{ascending:false})
+    .limit(1);
+
+  const pendingRequest=pendingPayment.data?.[0]||null;
+
+  if(pendingRequest){
+    const message=pendingRequest.payment_declared_at
+      ? 'Your previous payment is awaiting verification. You cannot select another plan or start another payment until verification is completed.'
+      : 'You already have a payment in progress. Complete the current payment before selecting another plan.';
+
+    return showMsg('globalMsg',message,'warn');
+  }
+
+  if(
+    !(
+      profile?.safety_rules_version===SAFETY_RULES_VERSION &&
+      profile?.safety_rules_acknowledged_at
+    )
+  ){
+    return showMsg(
+      'globalMsg',
+      'Please acknowledge the Player Safety & Participation Rules before selecting a plan.',
+      'error'
+    );
+  }
+
   const{data,error}=await sb.rpc('choose_my_plan',{p_plan:plan});
+
   if(error)return showMsg('globalMsg',error.message,'error');
+
   showMsg('globalMsg',data||'Plan updated.');
   await loadSession();
 }
@@ -204,10 +323,87 @@ async function declarePackagePaymentCompleted(requestId){
   if(!confirm('Confirm that you have completed the payment using the HC Dubai payment link?'))return;
   const {data,error}=await sb.rpc('player_declare_package_payment_v778',{p_request_id:requestId});
   if(error)return showMsg('globalMsg',error.message,'error');
-  showMsg('globalMsg',data||'Payment declared. Your package is provisionally active.','success');
+  showMsg('globalMsg',data||'Payment declared. Your payment is awaiting verification','success');
   await loadSession();
 }
+async function uploadPendingProfilePhoto(){
+  const file=el('pendingPhoto')?.files?.[0];
+
+  if(!file){
+    return showMsg(
+      'globalMsg',
+      'Please select a profile photo.',
+      'error'
+    );
+  }
+
+  const photoCheck=await validateProfilePhotoV91(file);
+
+  if(!photoCheck.ok){
+    return showMsg(
+      'globalMsg',
+      photoCheck.message,
+      'error'
+    );
+  }
+
+  const extension=
+    (file.name.split('.').pop()||'jpg').toLowerCase();
+
+  const path=
+    `${currentUser.id}/profile-${Date.now()}.${extension}`;
+
+  const {error:uploadError}=await sb.storage
+    .from('player-photos')
+    .upload(path,file,{upsert:true});
+
+  if(uploadError){
+    return showMsg(
+      'globalMsg',
+      'Profile photo upload failed: '+uploadError.message,
+      'error'
+    );
+  }
+
+  const {data:updatedProfile,error:profileError}=await sb
+    .from('profiles')
+    .update({photo_path:path})
+    .eq('id',currentUser.id)
+    .select('*')
+    .single();
+
+  if(profileError){
+    return showMsg(
+      'globalMsg',
+      'Photo uploaded, but the profile could not be updated: '+profileError.message,
+      'error'
+    );
+  }
+
+  profile=updatedProfile;
+
+  showMsg(
+    'globalMsg',
+    'Profile photo uploaded successfully.',
+    'success'
+  );
+
+  await loadPendingApproval();
+}
 async function loadPendingApproval(){
+    const photoReady=!!profile?.photo_path;
+  const photoStatus=el('pendingPhotoStatus');
+  const photoForm=el('pendingPhotoForm');
+
+  if(photoStatus){
+    photoStatus.innerHTML=photoReady
+      ? '<div class="notice success">✓ PROFILE PHOTO UPLOADED</div>'
+      : '<div class="notice error">A profile photo is required before TECHNICAL can approve your account.</div>';
+  }
+
+  if(photoForm){
+    photoForm.classList.toggle('hidden',photoReady);
+  }
   const metadataDob=currentUser?.user_metadata?.date_of_birth||null;
   if(!profile?.date_of_birth && metadataDob){
     const upd=await sb.from('profiles').update({date_of_birth:metadataDob}).eq('id',currentUser.id).select('*').single();
@@ -216,10 +412,23 @@ async function loadPendingApproval(){
   const effectiveDob=profile?.date_of_birth||metadataDob;
   const minor=isMinor(effectiveDob);
   const card=el('pendingMinorWaiverCard');
-  if(!minor){
+   if(!minor){
     card.classList.add('hidden');
-    el('pendingApprovalStatus').innerHTML='<strong>TECHNICAL APPROVAL REQUIRED</strong><br>Your account has been created and is awaiting approval by Handball Club Dubai.';
-    el('pendingApprovalText').textContent='You can sign in and check this status, but training registration and payment/package activation will become available only after your account has been approved.';
+
+    if(!photoReady){
+      el('pendingApprovalStatus').innerHTML=
+        '<strong>PROFILE PHOTO REQUIRED</strong><br>Upload your profile photo below to submit your account for TECHNICAL approval.';
+
+      el('pendingApprovalText').textContent=
+        'Your account cannot be reviewed until the required profile photo has been uploaded.';
+    }else{
+      el('pendingApprovalStatus').innerHTML=
+        '<strong>TECHNICAL APPROVAL REQUIRED</strong><br>Your profile is complete and is awaiting approval by Handball Club Dubai.';
+
+      el('pendingApprovalText').textContent=
+        'Training registration and payment/package activation will become available after your account has been approved.';
+    }
+
     return;
   }
   const w=await sb.from('player_waivers').select('*').eq('player_id',currentUser.id).eq('status','signed').eq('waiver_version','HC-DUBAI-MINOR-V1').maybeSingle();
@@ -230,13 +439,30 @@ async function loadPendingApproval(){
     : '<div class="notice error">A parent/legal guardian must complete and sign this waiver before the account can be sent for TECHNICAL review.</div>';
   el('pendingWaiverForm').classList.toggle('hidden',signed);
 
-  if(signed){
-    el('pendingApprovalStatus').innerHTML='<strong>TECHNICAL APPROVAL REQUIRED</strong><br>The parental waiver is complete. Your account is now awaiting approval by Handball Club Dubai.';
-    el('pendingApprovalText').textContent='Training registration and payment/package activation will become available only after TECHNICAL approves and activates the account.';
+    if(!photoReady){
+    el('pendingApprovalStatus').innerHTML=
+      '<strong>PROFILE PHOTO REQUIRED</strong><br>A profile photo must be uploaded before this account can be sent for TECHNICAL review.';
+
+    el('pendingApprovalText').textContent=
+      signed
+        ? 'The parental waiver is complete. Upload the required profile photo below.'
+        : 'Upload the required profile photo and complete the parent/legal guardian waiver below.';
+  }else if(signed){
+    el('pendingApprovalStatus').innerHTML=
+      '<strong>TECHNICAL APPROVAL REQUIRED</strong><br>The profile photo and parental waiver are complete. Your account is awaiting approval by Handball Club Dubai.';
+
+    el('pendingApprovalText').textContent=
+      'Training registration and payment/package activation will become available after TECHNICAL approves and activates the account.';
   }else{
-    el('pendingApprovalStatus').innerHTML='<strong>PARENTAL WAIVER REQUIRED</strong><br>This account belongs to a minor and is not yet ready for TECHNICAL review.';
-    el('pendingApprovalText').textContent='Complete the parent/legal guardian waiver below. After submission, the account will automatically move to TECHNICAL review.';
-    if(el('pgEmail') && !el('pgEmail').value)el('pgEmail').value=currentUser?.email||'';
+    el('pendingApprovalStatus').innerHTML=
+      '<strong>PARENTAL WAIVER REQUIRED</strong><br>This account belongs to a minor and is not yet ready for TECHNICAL review.';
+
+    el('pendingApprovalText').textContent=
+      'Complete the parent/legal guardian waiver below. After submission, the account will move to TECHNICAL review.';
+  }
+
+  if(!signed && el('pgEmail') && !el('pgEmail').value){
+    el('pgEmail').value=currentUser?.email||'';
   }
 }
 async function signPendingWaiver(){
