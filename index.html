@@ -217,6 +217,7 @@ th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:left;vert
 .merchOrderCard{border:1px solid var(--border);border-radius:14px;padding:13px;margin:10px 0;background:#fff}.merchOrderTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.merchItems{font-size:13px;line-height:1.5;margin-top:8px}
 .merchManagerGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.merchProductAdmin{border:1px solid var(--border);border-radius:14px;padding:12px;margin:9px 0}.merchProductAdmin img{width:90px;height:90px;object-fit:contain;border:1px solid var(--border);border-radius:12px;background:#fafafa}
 .merchStatusRow{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:8px}.clubRoleTag{background:#eaf7fc;color:#075d77}
+.merchQty{display:inline-flex;align-items:center;justify-content:center;gap:7px}.merchQty button{width:30px;min-width:30px;padding:5px 8px}
 @media(max-width:760px){.merchGrid{grid-template-columns:1fr 1fr}.merchCartRow{grid-template-columns:1fr auto}.merchCartRow>*:not(:first-child):not(:last-child){font-size:12px}.merchManagerGrid{grid-template-columns:1fr}.merchImg{height:170px}}
 @media(max-width:430px){.merchGrid{grid-template-columns:1fr}}
 
@@ -605,8 +606,9 @@ th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:left;vert
             <strong>ORDER SUMMARY</strong><div id="merchandiseCart"></div>
             <div class="row" style="justify-content:space-between;margin-top:10px"><strong>TOTAL</strong><strong id="merchandiseCartTotal">AED 0</strong></div>
             <label id="merchSizeAckWrap" class="small hidden"><input id="merchSizeAck" type="checkbox" style="width:auto"> I confirm that I have checked and selected the correct size.</label>
-            <button onclick="submitMerchandiseOrder()">SUBMIT ORDER</button>
+            <div class="row"><button id="submitMerchandiseOrderBtn" onclick="submitMerchandiseOrder()">SUBMIT ORDER</button><button id="cancelMerchandiseEditBtn" class="secondary hidden" onclick="cancelMerchandiseOrderEdit()">CANCEL EDIT</button></div>
           </div>
+          <div id="merchandiseOrderMsg" style="margin-top:10px"></div>
           <hr style="margin:18px 0;border:0;border-top:1px solid var(--border)">
           <div class="label">My Merchandise Orders</div><div id="myMerchandiseOrders"><div class="muted">No merchandise orders.</div></div>
         </div>
@@ -698,7 +700,8 @@ th,td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:left;vert
       <textarea id="tmInfo" placeholder="Tournament information / notes"></textarea><div class="muted">Published tournaments automatically appear in Home → Upcoming Activities & Events.</div><button onclick="createTournamentV90()">CREATE TOURNAMENT</button>
     </div>
     <div class="card"><div class="label">Tournaments</div><div id="tournamentManagerList"><div class="muted">No tournaments.</div></div></div>
-    <div id="tournamentRosterCard" class="card hidden"><div class="label">Player Availability / Selection</div><h3 id="tournamentRosterTitle"></h3><div id="tournamentRosterSummary" class="row"></div><div class="row"><button class="secondary" onclick="filterTournamentRosterV91('ALL')">ALL</button><button class="secondary" onclick="filterTournamentRosterV91('AVAILABLE')">AVAILABLE</button><button class="secondary" onclick="filterTournamentRosterV91('NOT_AVAILABLE')">NOT AVAILABLE</button><button class="secondary" onclick="filterTournamentRosterV91('NO_RESPONSE')">NO RESPONSE</button></div><div id="tournamentRoster"></div><hr style="margin:18px 0;border:0;border-top:1px solid var(--border)"><div class="label">Final Squad</div><div id="tournamentFinalSquad"><div class="muted">No players selected yet.</div></div></div>
+    <div id="tournamentRosterCard" class="card hidden"><div class="label">Player Availability / Selection</div><h3 id="tournamentRosterTitle"></h3><div id="tournamentRosterSummary" class="row"></div><div class="row"><button class="secondary" onclick="filterTournamentRosterV91('ALL')">ALL</button><button class="secondary" onclick="filterTournamentRosterV91('AVAILABLE')">AVAILABLE</button><button class="secondary" onclick="filterTournamentRosterV91('NOT_AVAILABLE')">NOT AVAILABLE</button><button class="secondary" onclick="filterTournamentRosterV91('NO_RESPONSE')">NO RESPONSE</button></div><div id="tournamentRoster"></div>
+          <hr style="margin:18px 0;border:0;border-top:1px solid var(--border)"><div class="label">Final Squad</div><div id="tournamentFinalSquad"><div class="muted">No players selected yet.</div></div></div>
   </section>
   <section id="merchandiseManagerView" class="hidden">
     <button class="secondary moduleBack" onclick="showManagementHub()">← MANAGEMENT HOME</button>
