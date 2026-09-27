@@ -616,10 +616,10 @@ async function confirmDeclaredPackagePayment(requestId){
 
 async function rejectDeclaredPackagePayment(requestId){
   if(profile?.role!=='accountant')return showMsg('globalMsg','FINANCE access required.','error');
-  if(!confirm('Payment not found. Cancel the provisional package?'))return;
+ if(!confirm('Payment not found. Cancel this payment request without activating the package?'))return; 
   const {data,error}=await sb.rpc('finance_reject_declared_package_v778',{p_request_id:requestId});
   if(error)return showMsg('globalMsg',error.message,'error');
-  showMsg('globalMsg',data||'Provisional payment rejected.','warn');
+ showMsg('globalMsg',data||'Payment not verified. The request was cancelled and no training credits were activated.','warn'); 
   await loadFinance();
 }
 
