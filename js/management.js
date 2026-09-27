@@ -12,7 +12,23 @@ function hasManagementAccess(){
 
 
 
-async function showManagementHub(){
+async function restoreManagementViewV12(){
+  let lastModule='hub';
+
+  try{
+    lastModule=localStorage.getItem('hcLastManagementModule')||'hub';
+  }catch(e){}
+
+  if(lastModule==='hub'){
+    return showManagementHub(false);
+  }
+
+  return openManagementModule(lastModule);
+}
+async function showManagementHub(remember=true){
+  if(remember){
+    try{localStorage.setItem('hcLastManagementModule','hub')}catch(e){}
+  }
   ['adminView','financeView','merchandiseManagerView','tournamentManagerView','committeeView','eventsManagerView'].forEach(id=>el(id)?.classList.add('hidden'));
   el('managementHubView')?.classList.remove('hidden');
   if(el('managementContactCard'))el('managementContactCard').classList.add('hidden');
@@ -77,6 +93,7 @@ async function openManagementModule(which){
     if(!isEventsV92())return showManagementHub();
     el('eventsManagerView')?.classList.remove('hidden'); await loadEventsManagerV91();
   }
+  try{localStorage.setItem('hcLastManagementModule',which)}catch(e){}
   managementIdentityV92();
 }
 // ---- EXPAND -> COLLAPSE, globally ----
