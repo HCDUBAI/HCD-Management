@@ -187,13 +187,19 @@ async function loadSession(openApp=true){
     return true;
   }
 
-  if(loginMode==='management' && hasManagementAccess()){
-    await showManagementHub();
+  let resumeManagement=false;
+
+  try{
+    resumeManagement=!!localStorage.getItem('hcLastManagementModule');
+  }catch(e){}
+
+  if(hasManagementAccess()&&(loginMode==='management'||resumeManagement)){
+    await restoreManagementViewV12();
   }else if((profile.person_type||'player')==='player'){
     el('playerView').classList.remove('hidden');
     await loadPlayer();
   }else if(hasManagementAccess()){
-    await showManagementHub();
+    await restoreManagementViewV12();
   }
 
   return true;

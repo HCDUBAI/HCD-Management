@@ -22,6 +22,28 @@ function merchStatusPill(status){
   const cls=['PAID','COLLECTED','READY FOR COLLECTION','READY_FOR_COLLECTION'].includes(s)?'ok':(['CANCELLED'].includes(s)?'due':'pending');
   return `<span class="pill ${cls}">${esc(s.replaceAll('_',' '))}</span>`;
 }
+function merchandiseVisibleOrdersV12(rows){
+  const cutoff=new Date();
+  cutoff.setMonth(cutoff.getMonth()-3);
+
+  return (rows||[]).filter(o=>{
+    if(o.status!=='CANCELLED')return true;
+
+    const cancellationDate=new Date(o.updated_at||o.created_at);
+    return cancellationDate>=cutoff;
+  });
+}
+function merchandiseVisibleOrdersV12(rows){
+  const cutoff=new Date();
+  cutoff.setMonth(cutoff.getMonth()-3);
+
+  return (rows||[]).filter(o=>{
+    if(o.status!=='CANCELLED')return true;
+
+    const cancellationDate=new Date(o.updated_at||o.created_at);
+    return cancellationDate>=cutoff;
+  });
+}
 async function loadMerchandiseShop(){
   const box=el('merchandiseProducts'); if(!box||!currentUser)return;
   const r=await sb.rpc('merchandise_list_products_v86');
@@ -87,7 +109,7 @@ async function loadMyMerchandiseOrders(){
   const box=el('myMerchandiseOrders');if(!box)return;
   const r=await sb.rpc('merchandise_list_my_orders_v86');
   if(r.error){box.innerHTML=`<div class="muted">Orders unavailable: ${esc(r.error.message)}</div>`;return}
-  const rows=r.data||[];
+  const rows=merchandiseVisibleOrdersV12(r.data||[]);
   box.innerHTML=rows.length?rows.map(o=>{
     const items=(o.items||[]).map(x=>`${esc(x.product_name)}${x.size?' · '+esc(x.size):''} × ${x.quantity}`).join('<br>');
     let payment='';
@@ -115,21 +137,227 @@ function merchandiseToday(){
 }
 async function loadMerchandiseManager(){
   if(!profile?.can_manage_merchandise)return;
-  const [or,pr]=await Promise.all([sb.rpc('merchandise_manager_list_orders_v86'),sb.rpc('merchandise_manager_list_products_v90')]);
+
+  const [or,pr]=await Promise.all([
+    sb.rpc('merchandise_manager_list_orders_v86'),
+    sb.rpc('merchandise_manager_list_products_v90')
+  ]);
+
   if(or.error)return showMsg('globalMsg',or.error.message,'error');
   if(pr.error)return showMsg('globalMsg',pr.error.message,'error');
-  merchandiseManagerOrders=or.data||[]; merchandiseManagerProducts=pr.data||[];
-  const ob=el('merchandiseManagerOrders');
-  ob.innerHTML=merchandiseManagerOrders.length?merchandiseManagerOrders.map(o=>{
-    const items=(o.items||[]).map(x=>`${esc(x.product_name)}${x.size?' · '+esc(x.size):''} × ${x.quantity}`).join('<br>');
-    const canReady=o.payment_status==='PAID' && !['READY_FOR_COLLECTION','COLLECTED','CANCELLED'].includes(o.status);
-    return `<div class="merchOrderCard"><div class="merchOrderTop"><div><strong>${esc(o.player_name||'Player')}</strong><br><span class="muted">${esc(o.player_phone||'')} · ${new Date(o.created_at).toLocaleString()}</span></div><div>${merchStatusPill(o.status)} ${merchStatusPill(o.payment_status)}</div></div><div class="merchItems">${items}</div><strong>Total: ${money(o.total_amount)}</strong><div class="merchStatusRow">${o.status==='NEW'?`<button onclick="setMerchandiseOrderStatus('${o.id}','CONFIRMED')">CONFIRM ORDER</button>`:''}${canReady?`<button class="green" onclick="setMerchandiseOrderStatus('${o.id}','READY_FOR_COLLECTION')">READY FOR COLLECTION</button>`:''}${o.status==='READY_FOR_COLLECTION'?`<button class="dark" onclick="setMerchandiseOrderStatus('${o.id}','COLLECTED')">COLLECTED</button>`:''}${['NEW','CONFIRMED'].includes(o.status)&&o.payment_status!=='PAID'?`<button class="secondary" onclick="setMerchandiseOrderStatus('${o.id}','CANCELLED')">CANCEL ORDER</button>`:''}</div></div>`;
-  }).join(''):'<div class="muted">No merchandise orders.</div>';
+
+  merchandiseManagerOrders=or.data||[];
+  merchandiseManagerProducts=pr.data||[];
+
+  renderMerchandiseManagerOrders();
   renderMerchandiseManagerProducts();
+}
+
+function setMerchandiseOrderFilterV12(value){
+  window.merchandiseManagerOrderFilter=value;
+  renderMerchandiseManagerOrders();
+}
+
+function setMerchandiseOrderSearchV12(value){
+  window.merchandiseManagerOrderSearch=value;
+  renderMerchandiseManagerOrders();
+}
+
+function renderMerchandiseManagerOrders(){
+  const box=el('merchandiseManagerOrders');if(!box)return;
+
+  const orders=merchandiseVisibleOrdersV12(merchandiseManagerOrders);
+  const currentFilter=window.merchandiseManagerOrderFilter||'ACTIVE';
+  const currentSearch=window.merchandiseManagerOrderSearch||'';
+
+  const count=status=>orders.filter(o=>o.status===status).length;
+  const activeCount=orders.filter(o=>!['COLLECTED','CANCELLED'].includes(o.status)).length;
+
+  const search=currentSearch.trim().toLowerCase();
+
+  const filtered=orders.filter(o=>{
+    const matchesSearch=!search||
+      String(o.player_name||'').toLowerCase().includes(search)||
+      String(o.player_phone||'').toLowerCase().includes(search)||
+      String(o.id||'').toLowerCase().includes(search);
+
+    const matchesFilter=
+      currentFilter==='ALL' ||
+      (currentFilter==='ACTIVE'&&!['COLLECTED','CANCELLED'].includes(o.status)) ||
+      o.status===currentFilter;
+
+    return matchesSearch&&matchesFilter;
+  });
+
+  const controls=`
+    <div class="grid" style="margin:12px 0">
+      <div>
+        <label class="small">Search Player or Order</label>
+        <input
+          value="${esc(currentSearch)}"
+          placeholder="Player name, phone or order ID"
+          oninput="setMerchandiseOrderSearchV12(this.value)"
+        >
+      </div>
+      <div>
+        <label class="small">Order Status</label>
+        <select onchange="setMerchandiseOrderFilterV12(this.value)">
+          <option value="ACTIVE" ${currentFilter==='ACTIVE'?'selected':''}>Active Orders (${activeCount})</option>
+          <option value="ALL" ${currentFilter==='ALL'?'selected':''}>All Orders (${orders.length})</option>
+          <option value="NEW" ${currentFilter==='NEW'?'selected':''}>New (${count('NEW')})</option>
+          <option value="CONFIRMED" ${currentFilter==='CONFIRMED'?'selected':''}>Confirmed (${count('CONFIRMED')})</option>
+          <option value="READY_FOR_COLLECTION" ${currentFilter==='READY_FOR_COLLECTION'?'selected':''}>Ready for Collection (${count('READY_FOR_COLLECTION')})</option>
+          <option value="COLLECTED" ${currentFilter==='COLLECTED'?'selected':''}>Collected (${count('COLLECTED')})</option>
+          <option value="CANCELLED" ${currentFilter==='CANCELLED'?'selected':''}>Cancelled (${count('CANCELLED')})</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-bottom:12px">
+      <span class="pill pending">NEW ${count('NEW')}</span>
+      <span class="pill">CONFIRMED ${count('CONFIRMED')}</span>
+      <span class="pill ok">READY ${count('READY_FOR_COLLECTION')}</span>
+      <span class="pill ok">COLLECTED ${count('COLLECTED')}</span>
+      <span class="pill due">CANCELLED ${count('CANCELLED')}</span>
+    </div>
+  `;
+
+  const cards=filtered.length?filtered.map(o=>{
+    const items=(o.items||[])
+      .map(x=>`${esc(x.product_name)}${x.size?' · '+esc(x.size):''} × ${x.quantity}`)
+      .join('<br>');
+
+    const canReady=o.payment_status==='PAID' &&
+      !['READY_FOR_COLLECTION','COLLECTED','CANCELLED'].includes(o.status);
+
+    return `
+      <details class="merchOrderCard">
+        <summary class="compactSummary">
+          <span>
+            <strong>${esc(o.player_name||'Player')}</strong><br>
+            <span class="muted">
+              ${esc(o.player_phone||'')} ·
+              ${new Date(o.created_at).toLocaleString()} ·
+              ${money(o.total_amount)}
+            </span>
+          </span>
+          <span>
+            ${merchStatusPill(o.status)}
+            ${o.status!=='CANCELLED'?merchStatusPill(o.payment_status):''}
+          </span>
+        </summary>
+
+        <div class="compactBody">
+          <div class="small muted">
+            ORDER ${esc(String(o.id).slice(0,8).toUpperCase())}
+          </div>
+
+          <div class="merchItems">${items}</div>
+
+          <div style="margin-top:8px">
+            <strong>Total: ${money(o.total_amount)}</strong>
+          </div>
+
+          <div class="merchStatusRow">
+            ${o.status==='NEW'
+              ? `<button onclick="setMerchandiseOrderStatus('${o.id}','CONFIRMED')">CONFIRM ORDER</button>`
+              : ''
+            }
+
+            ${canReady
+              ? `<button class="green" onclick="setMerchandiseOrderStatus('${o.id}','READY_FOR_COLLECTION')">READY FOR COLLECTION</button>`
+              : ''
+            }
+
+            ${o.status==='READY_FOR_COLLECTION'
+              ? `<button class="dark" onclick="setMerchandiseOrderStatus('${o.id}','COLLECTED')">COLLECTED</button>`
+              : ''
+            }
+
+            ${['NEW','CONFIRMED'].includes(o.status)&&o.payment_status==='AWAITING_PAYMENT'
+              ? `<button class="secondary" onclick="setMerchandiseOrderStatus('${o.id}','CANCELLED')">CANCEL ORDER</button>`
+              : ''
+            }
+          </div>
+
+          ${o.payment_status==='DECLARED'
+            ? `<div class="notice warn" style="margin-top:10px">
+                 <strong>PAYMENT DECLARED</strong><br>
+                 Waiting for FINANCE verification before the order can proceed.
+               </div>`
+            : ''
+          }
+          <div id="merchManagerOrderMsg-${o.id}" style="margin-top:10px"></div>
+        </div>
+      </details>
+    `;
+  }).join(''):'<div class="muted">No orders match the selected filters.</div>';
+
+  box.innerHTML=controls+cards;
 }
 function renderMerchandiseManagerProducts(){
   const box=el('merchandiseManagerProducts');if(!box)return;
-  box.innerHTML=merchandiseManagerProducts.map(p=>`<div class="merchProductAdmin"><div class="row"><img src="${merchProductImage(p)}"><div style="flex:1"><strong>${esc(p.name)}</strong><br><span class="muted">${money(p.price_aed)} · ${p.active?'ACTIVE':'INACTIVE'}</span></div></div><div class="grid"><div><label class="small">Name</label><input id="mpName-${p.id}" value="${esc(p.name)}"></div><div><label class="small">Price AED</label><input id="mpPrice-${p.id}" type="number" min="0" step="0.01" value="${Number(p.price_aed)}"></div><div><label class="small">Sizes</label><input id="mpSizes-${p.id}" value="${esc(merchSizesArray(p.sizes).join(','))}"></div><div><label class="small">Display Order</label><input id="mpSort-${p.id}" type="number" value="${Number(p.sort_order||0)}"></div><div><label class="small">Supplier</label><input id="mpSupplier-${p.id}" value="${esc(p.supplier_name||'')}" placeholder="Optional supplier name"></div></div><textarea id="mpDesc-${p.id}" placeholder="Description">${esc(p.description||'')}</textarea><div class="row"><label class="small"><input id="mpReq-${p.id}" type="checkbox" style="width:auto" ${p.requires_size?'checked':''}> Size required</label><label class="small"><input id="mpActive-${p.id}" type="checkbox" style="width:auto" ${p.active?'checked':''}> Active</label></div><label class="small">Replace image (optional)</label><input id="mpImage-${p.id}" type="file" accept="image/*"><button onclick="saveMerchandiseProduct('${p.id}')">SAVE PRODUCT</button></div>`).join('');
+
+  box.innerHTML=merchandiseManagerProducts.length
+    ? merchandiseManagerProducts.map(p=>`
+      <details class="merchProductAdmin">
+        <summary class="compactSummary">
+          <span class="row" style="flex:1">
+            <img src="${merchProductImage(p)}" alt="${esc(p.name)}">
+            <span>
+              <strong>${esc(p.name)}</strong><br>
+              <span class="muted">${money(p.price_aed)} · ${p.active?'ACTIVE':'INACTIVE'}</span>
+            </span>
+          </span>
+          <span class="muted expandLabel">EDIT</span>
+        </summary>
+
+        <div class="compactBody">
+          <div class="grid">
+            <div>
+              <label class="small">Name</label>
+              <input id="mpName-${p.id}" value="${esc(p.name)}">
+            </div>
+            <div>
+              <label class="small">Price AED</label>
+              <input id="mpPrice-${p.id}" type="number" min="0" step="0.01" value="${Number(p.price_aed)}">
+            </div>
+            <div>
+              <label class="small">Sizes</label>
+              <input id="mpSizes-${p.id}" value="${esc(merchSizesArray(p.sizes).join(','))}">
+            </div>
+            <div>
+              <label class="small">Display Order</label>
+              <input id="mpSort-${p.id}" type="number" value="${Number(p.sort_order||0)}">
+            </div>
+            <div>
+              <label class="small">Supplier</label>
+              <input id="mpSupplier-${p.id}" value="${esc(p.supplier_name||'')}" placeholder="Optional supplier name">
+            </div>
+          </div>
+
+          <textarea id="mpDesc-${p.id}" placeholder="Description">${esc(p.description||'')}</textarea>
+
+          <div class="row">
+            <label class="small">
+              <input id="mpReq-${p.id}" type="checkbox" style="width:auto" ${p.requires_size?'checked':''}>
+              Size required
+            </label>
+            <label class="small">
+              <input id="mpActive-${p.id}" type="checkbox" style="width:auto" ${p.active?'checked':''}>
+              Active
+            </label>
+          </div>
+
+          <label class="small">Replace image (optional)</label>
+          <input id="mpImage-${p.id}" type="file" accept="image/*">
+
+          <button onclick="saveMerchandiseProduct('${p.id}')">SAVE PRODUCT</button>
+          <div id="mpMsg-${p.id}" style="margin-top:10px"></div>
+        </div>
+      </details>
+    `).join('')
+    : '<div class="muted">No merchandise products.</div>';
 }
 async function saveMerchandiseProduct(id){
   const existing=merchandiseManagerProducts.find(x=>String(x.id)===String(id));if(!existing)return;
