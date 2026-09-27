@@ -26,7 +26,7 @@ async function savePlayerProfile(){
     const path=`${currentUser.id}/profile-${Date.now()}.${(f.name.split('.').pop()||'jpg').toLowerCase()}`;
     const up=await sb.storage.from('player-photos').upload(path,f,{upsert:true});
     if(up.error)return showMsg('globalMsg','Profile saved, but photo upload failed: '+up.error.message,'error');
-    const pe=await sb.from('profiles').update({photo_path:path}).eq('id',currentUser.id);
+    const pe=await sb.rpc('player_set_profile_photo_v12',{p_photo_path:path});
     if(pe.error)return showMsg('globalMsg','Photo uploaded, but profile link failed: '+pe.error.message,'error');
   }
   showMsg('globalMsg','Player profile updated.');
@@ -365,12 +365,7 @@ async function uploadPendingProfilePhoto(){
     );
   }
 
-  const {data:updatedProfile,error:profileError}=await sb
-    .from('profiles')
-    .update({photo_path:path})
-    .eq('id',currentUser.id)
-    .select('*')
-    .single();
+  const {error:profileError}=await sb.rpc('player_set_profile_photo_v12',{p_photo_path:path});
 
   if(profileError){
     return showMsg(
@@ -380,7 +375,7 @@ async function uploadPendingProfilePhoto(){
     );
   }
 
-  profile=updatedProfile;
+  profile={...profile,photo_path:path};
 
   showMsg(
     'globalMsg',
@@ -495,10 +490,17 @@ async function signPendingWaiver(){
   await loadPendingApproval();
 }
 async function loadPhoto(){
-  el('photoWrap').innerHTML='';
+  const mainPhoto=el('photoWrap');
+  const statusPhoto=el('playerStatusPhoto');
+  if(mainPhoto)mainPhoto.innerHTML='';
+  if(statusPhoto)statusPhoto.innerHTML='';
   if(profile?.photo_path){
     const{data}=await sb.storage.from('player-photos').createSignedUrl(profile.photo_path,3600);
-    if(data?.signedUrl)el('photoWrap').innerHTML=`<img class="photo" src="${data.signedUrl}" alt="Player photo">`;
+    if(data?.signedUrl){
+      const photoHtml=`<img class="photo" src="${esc(data.signedUrl)}" alt="Player profile photo">`;
+      if(mainPhoto)mainPhoto.innerHTML=photoHtml;
+      if(statusPhoto)statusPhoto.innerHTML=photoHtml;
+    }
   }
 }
 async function acknowledgeSafetyRules(){
