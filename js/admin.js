@@ -580,13 +580,60 @@ async function loadManagementAlerts(){
     });
   }catch(e){console.error(e)}
 
-  // TECHNICAL approval inbox: every new participant requires explicit approval.
+    // TECHNICAL approval inbox: every new participant requires explicit approval.
   if(profile?.role==='admin'){
-    const {data:pendingPlayers,error:pendingErr}=await sb.rpc('technical_list_pending_participants_v830');
+    const {data:pendingPlayers,error:pendingErr}=await sb.rpc('technical_list_pending_participants_v831');
+
     if(!pendingErr){
-      (pendingPlayers||[]).forEach(p=>{
-        cards.push(`<div class="training"><span class="pill due">NEW ACCOUNT APPROVAL REQUIRED</span><br><strong>${esc(p.full_name||'New player')}</strong><br><span class="muted">${esc(p.email||'No email')} · ${esc(p.phone||'No WhatsApp')}</span><br><strong>DOB:</strong> ${esc(p.date_of_birth||'—')} &nbsp; <strong>Gender:</strong> ${esc(p.gender||'—')}<br><strong>Playing Position:</strong> ${esc(p.playing_position||'—')}<br><strong>Handball background:</strong><br><span class="muted">${esc(p.handball_experience||'—')}</span><br><button onclick="decideParticipantApproval('${p.id}','approved')">APPROVE & ACTIVATE</button><button class="secondary" onclick="decideParticipantApproval('${p.id}','rejected')">REJECT & REMOVE</button></div>`);
-      });
+      for(const p of pendingPlayers||[]){
+        let photoHtml='<div class="muted">No profile photo uploaded</div>';
+
+        if(p.photo_path){
+          const {data:photoData}=await sb.storage
+            .from('player-photos')
+            .createSignedUrl(p.photo_path,3600);
+
+          if(photoData?.signedUrl){
+            photoHtml=`<img class="photo" src="${esc(photoData.signedUrl)}" alt="Player profile photo">`;
+          }
+        }
+
+        const waiverHtml=p.is_minor
+          ? `<br><strong>Minor:</strong> Yes
+             <br><strong>Parental Waiver:</strong> ${p.waiver_signed?'SIGNED':'NOT SIGNED'}
+             <br><strong>Parent / Guardian:</strong> ${esc(p.guardian_name||'—')}
+             <br><strong>Relationship:</strong> ${esc(p.guardian_relationship||'—')}
+             <br><strong>Guardian WhatsApp:</strong> ${esc(p.guardian_phone||'—')}
+             <br><strong>Guardian Email:</strong> ${esc(p.guardian_email||'—')}
+             <br><strong>Media Consent:</strong> ${p.media_consent===true?'YES':'NO'}`
+          : `<br><strong>Minor:</strong> No`;
+
+        cards.push(`
+          <div class="training">
+            <span class="pill due">NEW ACCOUNT APPROVAL REQUIRED</span>
+            <br>${photoHtml}
+            <br><strong>${esc(p.full_name||'New player')}</strong>
+            <br><span class="muted">${esc(p.email||'No email')} · ${esc(p.phone||'No WhatsApp')}</span>
+            <br><strong>DOB:</strong> ${esc(p.date_of_birth||'—')}
+            &nbsp; <strong>Gender:</strong> ${esc(p.gender||'—')}
+            <br><strong>Nationality:</strong> ${esc(p.nationality||'—')}
+            <br><strong>Playing Position:</strong> ${esc(p.playing_position||'—')}
+            <br><strong>Handball Background:</strong>
+            <br><span class="muted">${esc(p.handball_experience||'—')}</span>
+            ${waiverHtml}
+            <br><button onclick="decideParticipantApproval('${p.id}','approved')">APPROVE & ACTIVATE</button>
+            <button
+  class="secondary"
+  data-photo-path="${esc(p.photo_path||'')}"
+  onclick="decideParticipantApproval('${p.id}','rejected',this.dataset.photoPath)"
+>
+  REJECT & REMOVE
+</button>
+          </div>
+        `);
+      }
+    }else{
+      console.error('Technical approval inbox:',pendingErr);
     }
   }
 
@@ -611,18 +658,69 @@ async function loadManagementAlerts(){
     if(technicalCount)technicalCount.textContent=String(cards.length);
   }
 }
-
-async function decideParticipantApproval(playerId,decision){
+async function decideParticipantApproval(playerId,decision,photoPath=''){
   const isReject=decision==='rejected';
-  if(!confirm(isReject?'Reject this account? The submitted account/profile data will be removed automatically.':'Approve and activate this account?'))return;
+
+  if(!confirm(
+    isReject
+      ? 'Reject this account? The submitted account/profile data will be removed automatically.'
+      : 'Approve and activate this account?'
+  ))return;
+
   let note=null;
-  if(isReject) note=prompt('Optional TECHNICAL note / reason:','')||null;
-  const {data,error}=await sb.rpc('technical_decide_participant_v830',{p_player_id:playerId,p_decision:decision,p_note:note});
-  if(error)return showMsg('globalMsg',error.message,'error');
-  showMsg('globalMsg',data||'Participant approval updated.',isReject?'warn':'success');
+
+  if(isReject){
+    note=prompt('Enter the reason for rejecting this account:','')?.trim()||'';
+
+    if(!note){
+      return showMsg(
+        'globalMsg',
+        'A rejection reason is required. The account has not been removed.',
+        'error'
+      );
+    }
+  }
+
+  const {data,error}=await sb.rpc(
+    'technical_decide_participant_v831',
+    {
+      p_player_id:playerId,
+      p_decision:decision,
+      p_note:note
+    }
+  );
+
+  if(error){
+    return showMsg('globalMsg',error.message,'error');
+  }
+
+  if(isReject&&photoPath){
+    const {error:photoError}=await sb.storage
+      .from('player-photos')
+      .remove([photoPath]);
+
+    if(photoError){
+      console.error('Profile photo removal:',photoError);
+
+      showMsg(
+        'globalMsg',
+        'Account removed, but its profile photo could not be deleted automatically. Please remove it manually from the player-photos bucket.',
+        'warn'
+      );
+
+      await loadAdmin();
+      return;
+    }
+  }
+
+  showMsg(
+    'globalMsg',
+    data||'Participant approval updated.',
+    isReject?'warn':'success'
+  );
+
   await loadAdmin();
 }
-
 async function resolveManagementAlert(id){
   const r=await sb.rpc('resolve_management_alert',{p_alert_id:id});
   if(r.error)return showMsg('globalMsg',r.error.message,'error');
